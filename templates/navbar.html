@@ -1,0 +1,205 @@
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<nav>
+    <a id="logo" href="{% url 'home' %}">
+        <img id="logo-image" src="{% static 'images/logo.png' %}">
+    </a>
+
+    <div id="catagory-container">
+        <a class="unselectable" class="header-catagories" href="{% url 'catagory' 'Featured' %}">
+            <div style="display: flex; justify-content: center; font-size: 32px;">Featured</div>
+        </a>
+        <a class="unselectable" class="header-catagories" href="{% url 'catagory' 'Shirts' %}">
+            <div style="display: flex; justify-content: center; font-size: 32px;">Shirts</div>
+        </a>
+        <a class="unselectable" class="header-catagories" href="{% url 'catagory' 'Jumpers' %}">
+            <div style="display: flex; justify-content: center; font-size: 32px;">Jumpers</div>
+        </a>
+        <a class="unselectable" class="header-catagories" href="{% url 'catagory' 'Pants' %}">
+            <div style="display: flex; justify-content: center; font-size: 32px;">Pants</div>
+        </a>
+    </div>
+
+    <div id="search-bar-box">
+        <div id="search-image-box">
+            <img id="search-image" src="{% static 'images/Search.png' %}">
+        </div>
+        <form method="GET">
+            <input id="search-bar" contenteditable="True" name="search"></input>
+            <input type="submit" hidden />
+        </form>
+    </div>
+
+    <div id="account-image-box" onclick=showAccount()>
+        <img id="account-image" src="{% static 'images/Account.png' %}">
+    </div>
+
+    <div id="account-container">
+        {% if request.user.is_authenticated %}
+        <p id="display-user">Logged in as {{request.user}}</p>
+        <a href="{% url 'logout' %}" class="login-button">Logout</a>
+        {% else %}
+        <div id="login-signup-button">
+            <div onclick="showLogin()" class="header-button">LOGIN</div>
+            <div class="header-divider">|</div>
+            <div onclick="showSignup()" class="header-button">SIGN UP</div>
+        </div>
+        <div id="login_temp" style="display:none;">
+            <form method="POST">
+                {% csrf_token %}
+                <!--Login form-->
+                <div class="login-box">
+                    <input class="user-input" type="text" placeholder="Username" name="username">
+                    <input class="user-input" type="password" placeholder="Password" name="password">
+                    <div>
+                        <button class="login-button" type="submit" name="login">Login</button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+        <div id="signup" style="display:none;">
+            <form method="POST">
+                {% csrf_token %}
+                <!--Signup form that only works with no closing-->
+                <div class="login-box">
+                    <input class="user-input" placeholder="Username" action="{{form.username}}
+                    <input class="user-input" placeholder="Password" type="password" action="{{form.password1}}
+                    <input class="user-input" placeholder="Confirm Password" type="password" action="{{form.password2}}
+                    <div>
+                        <button class="login-button" type="submit" name="register">Sign Up</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+     <!--   {% if request.user.is_authenticated %}
+        <p id="display-user">Logged in as {{request.user}}</p>
+        <a href="{% url 'logout' %}" class="header-button">Logout</a>
+        {% else %}
+        <h3>Login</h3>
+        <form method="POST", action="">
+            {% csrf_token %}
+
+            <div class="login-box">
+                <input class="user-input" type="text" placeholder="Username" name="username">
+                <input class="user-input" type="password" placeholder="Password" name="password">
+                <div>
+                    <input class="login-button" type="submit" value="Login" />
+                </div>
+
+            </div>
+        </form>
+
+
+       <h3>Dont have an account?</h3>
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="login-box">
+                <input class="user-input" placeholder="Username" action="{{form.username}}">
+                <input class="user-input" placeholder="Password" type="password" action="{{form.password1}}">
+                <input class="user-input" placeholder="Confirm Password" type="password" action="{{form.password2}}">
+                <div>
+                    <input class="login-button" type="submit" value="Sign Up">
+                </div>
+
+            </div>
+        </form>
+
+        {% endif %} -->
+
+    </div>
+
+    <div id="cart-container">
+        {% if cart %}
+            {% for i in cart %}
+                <div id="cart-item-container">
+                    <div style="display: flex;">
+                        <div style="margin-right: 25px; font-size: 18px;" id="cart-item-name">{{i.itemName}}</div>
+                        <div style="font-size: 18px;" id="cart-item-size">{{i.itemSize}}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 18px;" id="cart-item-price">${{i.price}}</div>
+                        <div id="remove-from-cart" onclick="removeFromCart({{i.id}})">Remove</div>
+                    </div>
+
+
+                </div>
+
+            {% endfor %}
+            <div style="width: 100%; height: 30px; position: absolute; bottom: 0; margin-bottom: 20px; display: flex; justify-content: space-around;">
+                <div style="font-size: 22px">Total: ${{total}}</div>
+                <a style="font-size: 22px;" id="buy-button" href="{% url 'buyCart' %}">BUY CART</a>
+            </div>
+
+        {% endif %}
+    </div>
+
+    <div id="cart-image-box" onclick=showCart()>
+        <img id="cart-image" src="{% static 'images/Cart.png' %}">
+    </div>
+
+    <script>
+        function showCart(){
+            document.addEventListener('click', function handleClickOutsideBox(event) {
+            const box = document.getElementById('cart-container');
+            const button = document.getElementById('cart-image-box');
+
+            if (!box.contains(event.target) && !button.contains(event.target)) {
+                box.style.display = 'none';
+            }
+
+            if (button.contains(event.target)) {
+                document.getElementById("cart-container").style.display = "flex";
+            }
+            });
+        }
+
+        function showLogin(){
+            document.getElementById("login_temp").style.display = "flex";
+            document.getElementById("signup").style.display = "none";
+            console.log("slogin")
+        }
+
+        function showSignup(){
+            document.getElementById("signup").style.display = "flex";
+            document.getElementById("login_temp").style.display = "none";
+            console.log("signup")
+        }
+
+
+        function showAccount(){
+            document.addEventListener('click', function handleClickOutsideBox(event) {
+            const box = document.getElementById('account-container');
+            const button = document.getElementById('account-image-box');
+
+            if (!box.contains(event.target) && !button.contains(event.target)) {
+                box.style.display = 'none';
+            }
+
+            if (button.contains(event.target)) {
+                document.getElementById("account-container").style.display = "flex";
+            }
+            });
+        }
+
+        //Add Ajax & Jquery to head
+        var x = document.createElement('script');
+        x.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js';
+        document.getElementsByTagName("head")[0].appendChild(x);
+
+        function removeFromCart(id, size, cart_id){
+            var data = {'id': id}
+            var URL = "{% url 'removeFromCart' %}"
+            $.post(URL, data);
+            console.log("sent")
+        }
+
+    </script>
+</nav>
+{% endblock %}

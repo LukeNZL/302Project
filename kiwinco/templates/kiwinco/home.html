@@ -1,0 +1,113 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<body>
+
+    <div id="specials-box">
+        <img id="specials-img" src="{% static 'images/Home-Image2.png' %}">
+    </div>
+
+    <div id = "main-catagory-container">
+        <div id="main-catagory-title">Featured</div>
+        <div id="main-item-row">
+                {% for list in featured_list %}
+
+                <a id="main-item-container" href="{% url 'item' list.id %}">
+                    <div id="main-item-image-box">
+<!--                        <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
+                    </div>
+                    <div id="main-item-cost">${{ list.Price }}</div>
+                </a>
+
+                {% endfor %}
+        </div>
+
+        <a href="{% url 'catagory' 'Featured' %}">see all</a>
+
+
+    </div>
+
+    <div id = "main-catagory-container">
+        <div id="main-catagory-title">Shirts</div>
+        <div id="main-item-row">
+
+            {% for list in shirt_list %}
+
+            <a id="main-item-container" href="{% url 'item' list.id %}">
+                <div id="main-item-image-box">
+<!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
+                </div>
+                <div id="main-item-cost">${{ list.Price }}</div>
+            </a>
+
+            {% endfor %}
+
+
+        </div>
+
+
+        <a href="{% url 'catagory' 'Shirts' %}">see all</a>
+
+
+    </div>
+
+    <div id = "main-catagory-container">
+        <div id="main-catagory-title">Jumpers</div>
+        <div id="main-item-row">
+
+            {% for list in jumper_list %}
+
+            <a id="main-item-container" href="{% url 'item' list.id %}">
+                <div id="main-item-image-box">
+<!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
+                </div>
+                <div id="main-item-cost">${{ list.Price }}</div>
+            </a>
+
+            {% endfor %}
+
+
+
+
+        </div>
+
+
+        <a href="{% url 'catagory' 'Jumpers' %}">see all</a>
+
+
+    </div>
+
+    <div id = "main-catagory-container">
+        <div id="main-catagory-title">Pants</div>
+        <div id="main-item-row">
+
+            {% for list in pants_list %}
+
+            <a id="main-item-container" href="{% url 'item' list.id %}">
+                <div id="main-item-image-box">
+<!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
+                </div>
+                <div id="main-item-cost">${{ list.Price }}</div>
+            </a>
+
+            {% endfor %}
+
+
+
+        </div>
+
+
+        <a href="{% url 'catagory' 'Pants' %}">see all</a>
+
+
+    </div>
+
+
+
+
+    <footer>
+    </footer>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<body>
+
+    <div id="cart-add-notif" style="">Item added to cart</div>
+    <div id="buy-notif" style="">Item Purchased</div>
+
+    <div id="item-container">
+        <div id="item-images-container">
+            <div id="large-image-container">
+                <div id="large-image-box">
+                    <img id="large-image" src="{{ item.Image.url }}" alt="">
+                </div>
+            </div>
+<!--            <div id="small-image-container">
+                <div class="small-image-box">
+                    <img class="small-image" src="" alt="">
+                </div>
+                <div class="small-image-box">
+                    <img class="small-image" src="" alt="">
+                </div>
+                <div class="small-image-box">
+                    <img class="small-image" src="" alt="">
+                </div>
+                <div class="small-image-box">
+                    <img class="small-image" src="" alt="">
+                </div>
+                <div class="small-image-box">
+                    <img class="small-image" src="" alt="">
+                </div>
+            </div>-->
+        </div>
+
+        <div id="item-options-container">
+            <div id="item-name">{{item.ItemName}}</div>
+            <div id="size-container">
+                <div id="XS" class="size" onclick="test('XS')">XS</div>
+                <div id="S" class="size" onclick="test('S')">S</div>
+                <div id="M" class="size" onclick="test('M')">M</div>
+                <div id="L" class="size" onclick="test('L')">L</div>
+                <div id="XL" class="size" onclick="test('XL')">XL</div>
+            </div>
+
+            <div id="item-cost">${{item.Price}}</div>
+
+            <div id="item-stock">Stock: </div>
+
+            <div id="add-cart-button" class="buy-item-button" onclick="addToCart()">Add to Cart</div>
+            <div id="buy-button" class="buy-item-button" onclick="buyNow()">Buy Now</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; font-size: 22px; margin-left: 20%; margin-right: 20%;">Description</div>
+    <div style="margin-top: 30px; font-size: 14px; margin-left: 20%; margin-right: 20%;">{{item.Description}}</div>
+
+    <script>
+        var selected_size = '';
+        var in_stock
+
+        function test(size){
+            reset('XS');
+            reset('S');
+            reset('M');
+            reset('L');
+            reset('XL');
+            document.getElementById(size).style.backgroundColor = "black";
+            document.getElementById(size).style.color = "white";
+            if (size == "XS"){
+                selected_size = 'XS'
+                document.getElementById('item-stock').textContent = "Stock: " + {{item.Stock_XS}}
+                if ({{item.Stock_XS}} <= 0){
+                    document.getElementById('add-cart-button').style.color = "grey";
+                    document.getElementById('buy-button').style.color = "grey";
+                    in_stock = false;
+                }
+                else{
+                    document.getElementById('add-cart-button').style.color = "black";
+                    document.getElementById('buy-button').style.color = "black";
+                    in_stock = true;
+                }
+            }
+            if (size == "S"){
+                selected_size = 'S'
+                document.getElementById('item-stock').textContent = "Stock: " + {{item.Stock_S}}
+                if ({{item.Stock_S}} <= 0){
+                    document.getElementById('add-cart-button').style.color = "grey";
+                    document.getElementById('buy-button').style.color = "grey";
+                    in_stock = false;
+                }
+                else{
+                    document.getElementById('add-cart-button').style.color = "black";
+                    document.getElementById('buy-button').style.color = "black";
+                    in_stock = true;
+                }
+            }
+            if (size == "M"){
+                selected_size = 'M'
+                document.getElementById('item-stock').textContent = "Stock: " + {{item.Stock_M}}
+                if ({{item.Stock_M}} <= 0){
+                    document.getElementById('add-cart-button').style.color = "grey";
+                    document.getElementById('buy-button').style.color = "grey";
+                    in_stock = false;
+                }
+                else{
+                    document.getElementById('add-cart-button').style.color = "black";
+                    document.getElementById('buy-button').style.color = "black";
+                    in_stock = true;
+                }
+            }
+            if (size == "L"){
+                selected_size = 'L'
+                document.getElementById('item-stock').textContent = "Stock: " + {{item.Stock_L}}
+                if ({{item.Stock_L}} <= 0){
+                    document.getElementById('add-cart-button').style.color = "grey";
+                    document.getElementById('buy-button').style.color = "grey";
+                    in_stock = false;
+                }
+                else{
+                    document.getElementById('add-cart-button').style.color = "black";
+                    document.getElementById('buy-button').style.color = "black";
+                    in_stock = true;
+                }
+            }
+            if (size == "XL"){
+                selected_size = 'XL'
+                document.getElementById('item-stock').textContent = "Stock: " + {{item.Stock_XL}}
+                if ({{item.Stock_XL}} <= 0){
+                    document.getElementById('add-cart-button').style.color = "grey";
+                    document.getElementById('buy-button').style.color = "grey";
+                    in_stock = false;
+                }
+                else{
+                    document.getElementById('add-cart-button').style.color = "black";
+                    document.getElementById('buy-button').style.color = "black";
+                    in_stock = true;
+                }
+            }
+        }
+
+        function reset(size){
+            document.getElementById(size).style.backgroundColor = "white";
+            document.getElementById(size).style.color = "black";
+
+        }
+
+        //Add Ajax & Jquery to head
+            var x = document.createElement('script');
+            x.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js';
+            document.getElementsByTagName("head")[0].appendChild(x);
+
+        function addToCart(){
+            price = {{item.Price}}
+            item_id = {{item.id}}
+            name = '{{item.ItemName}}'
+            if (selected_size != '' && in_stock && 'True'== '{{request.user.is_authenticated}}'){
+                document.getElementById('cart-add-notif').style.display = "flex";
+                setTimeout(() => {  document.getElementById('cart-add-notif').style.display = "none"; }, 3000);
+
+                var data = {'size': selected_size, 'price': price, 'name': name}
+                var URL = "{% url 'addToCart' item.id %}"
+                $.post(URL, data);
+            }
+        }
+
+        function buyNow(){
+            price = {{item.Price}}
+            id = {{item.id}}
+            if (selected_size != '' && in_stock == true && 'True'== '{{request.user.is_authenticated}}'){
+
+                document.getElementById('buy-notif').style.display = "flex";
+                setTimeout(() => {  document.getElementById('buy-notif').style.display = "none"; }, 3000);
+
+                var data = {'size': selected_size, 'id': id}
+                var URL = "{% url 'buyItem' %}"
+                $.post(URL, data);
+                }
+
+            }
+
+    </script>
+
+    <footer></footer>
+</body>
+
+{% endblock %}

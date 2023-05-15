@@ -1,0 +1,47 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<body>
+    <div id="catagory-sub-header">
+        <div style="font-size:36px; margin-left: 50px;">{{ catagory }}</div>
+        <div style="margin-right: 150px;">
+            <label style="font-size:26px; font-weight: 600;">Sort By</label>
+            <form method="get">
+                <select name="sort_value" id="sort" value='{{ sort_value }}' onchange="submit()">
+                    <option value="Newest-Release" {% if sort_value == 'Newest-Release' %} selected {% endif %}>Newest Release</option>
+                    <option value="Oldest-Release" {% if sort_value == 'Oldest-Release' %} selected {% endif %}>Oldest Release</option>
+                    <option value="Price-low-to-high" {% if sort_value == 'Price-low-to-high' %} selected {% endif %}>Price low to high</option>
+                    <option value="Price-high-to-low" {% if sort_value == 'Price-high-to-low' %} selected {% endif %}>Price high to low</option>
+                </select>
+                <input style="display: none;" type="submit" value="Submit" id="hidden-button">
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        function submit(){
+            var submitButton =  document.getElementById(“”);
+            submitButton.click();
+        }
+
+    </script>
+
+    <div id="catagory-item-row">
+    {% for items in item_list %}
+
+        <a id="main-item-container" href="{% url 'item' items.id %}">
+            <div id="main-item-image-box">
+                <img id="main-item-image" src="{{ items.Image.url }}" alt="">
+            </div>
+            <div id="main-item-cost">${{ items.Price }}</div>
+        </a>
+
+    {% endfor %}
+    </div>
+
+    <footer></footer>
+</body>
+
+{% endblock %}
