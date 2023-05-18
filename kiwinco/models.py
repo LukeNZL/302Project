@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
 
 # Create your models here.
 class CartedItem(models.Model):
@@ -24,9 +25,17 @@ class Item(models.Model):
     Pants = models.BooleanField()
     Image = models.ImageField(upload_to='images/')
     created = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.ItemName
+    
 
 class Purchase(models.Model):
     itemName = models.CharField(max_length=30)
     itemSize = models.CharField(max_length=3)
     buyerId = models.PositiveIntegerField()
     price = models.DecimalField(default=0, decimal_places=2, max_digits=6)
+    orderID = models.CharField(primary_key=True, max_length=100, default=uuid.uuid4,unique=True, editable=False)
+    
+    def __str__(self):
+        return self.orderID
