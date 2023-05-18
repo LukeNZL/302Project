@@ -174,3 +174,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+STRIPE_PUBLIC_KEY = "pk_live_51N60CYJDzpA491w3K0OtJz8a6VZUkc5ZiRMXoQyWBhNKVJou1M3JGzeGOqBRnA2ZO5zf6vonSuNUVEkKDfbjdAQv006M615wDv"
+STRIPE_SECRET_KEY = "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"
+STRIPE_WEBHOOK_SECRET = "whsec_b01dcfb8b6de8822091be6376def7cc3de3ee6105b176cf2b734ecf7136605d6"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
