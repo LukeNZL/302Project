@@ -17,7 +17,7 @@
                     <div id="main-item-image-box">
 <!--                        <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
                     </div>
-                    <div id="main-item-cost">${{ list.Price }}</div>
+                    <div id="main-item-cost">${{ list.getDisplayPrice }}</div>
                 </a>
 
                 {% endfor %}
@@ -38,7 +38,7 @@
                 <div id="main-item-image-box">
 <!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
                 </div>
-                <div id="main-item-cost">${{ list.Price }}</div>
+                <div id="main-item-cost">${{ list.getDisplayPrice }}</div>
             </a>
 
             {% endfor %}
@@ -62,7 +62,7 @@
                 <div id="main-item-image-box">
 <!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
                 </div>
-                <div id="main-item-cost">${{ list.Price }}</div>
+                <div id="main-item-cost">${{ list.getDisplayPrice }}</div>
             </a>
 
             {% endfor %}
@@ -88,7 +88,7 @@
                 <div id="main-item-image-box">
 <!--                    <img id="main-item-image" src="{{ list.Image.url }}" alt="">-->
                 </div>
-                <div id="main-item-cost">${{ list.Price }}</div>
+                <div id="main-item-cost">${{ list.getDisplayPrice }}</div>
             </a>
 
             {% endfor %}

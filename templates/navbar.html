@@ -124,7 +124,7 @@
                         <div style="font-size: 18px;" id="cart-item-size">{{i.itemSize}}</div>
                     </div>
                     <div>
-                        <div style="font-size: 18px;" id="cart-item-price">${{i.price}}</div>
+                        <div style="font-size: 18px;" id="cart-item-price">${{i.getDisplayPrice}}</div>
                         <div id="remove-from-cart" onclick="removeFromCart({{i.id}})">Remove</div>
                     </div>
 

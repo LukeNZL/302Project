@@ -7,6 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from.forms import RegisterForm
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse
+import stripe
+from django.core.mail import send_mail
 # Create your views here.
 
 def home(request):
@@ -21,7 +25,7 @@ def home(request):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/' + search_value)
+            return redirect('/kiwinco/' + search_value)
     ##search##
 
     ## login ##
@@ -75,7 +79,7 @@ def item(request, item_id):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/' + search_value)
+            return redirect('/kiwinco/' + search_value)
     ##search##
 
 
@@ -134,7 +138,7 @@ def catagory(request,catagory):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/' + search_value)
+            return redirect('/kiwinco/' + search_value)
     ##search##
 
     if 'sort_value' in request.GET:
@@ -279,6 +283,173 @@ def removeFromCart(request):
 
 def buyCart(request):
     if request.user.is_authenticated:
+
+        cart = CartedItem.objects.filter(buyerId = request.user.id)
+        total = sum(cart.values_list('price', flat=True))
+
+        YOUR_DOMAIN = "http://127.0.0.1:8000/kiwinco/"
+        stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
+
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                billing_address_collection='auto',
+                shipping_address_collection={
+                'allowed_countries': ['NZ'],
+                },
+                line_items=[
+                    {
+                        # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                        #'price': 'price_1N6eFXJDzpA491w3wbEEK3GH',
+                        'price_data': {
+                            'currency': 'nzd',
+                            'product_data' : {
+                                'name' : "Cart",
+                            },
+                            'unit_amount' : total,
+
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                mode='payment',
+                success_url=YOUR_DOMAIN + 'successC',
+                cancel_url=YOUR_DOMAIN + 'cancel',
+                automatic_tax={'enabled': True},
+        )
+        except Exception as e:
+            return HttpResponse(e)
+
+        return redirect(checkout_session.url, code=303)
+    
+    else:
+        return('home')
+
+
+    #     u = CartedItem.objects.filter(buyerId=request.user.id)
+    #     for i in u:
+    #         j = Item.objects.get(pk=i.itemId)
+    #         if i.itemSize == 'XS':
+    #             j.Stock_XS = j.Stock_XS-1
+    #         elif i.itemSize == 'S':
+    #             j.Stock_S = j.Stock_S - 1
+    #         elif i.itemSize == 'M':
+    #             j.Stock_M = j.Stock_M - 1
+    #         elif i.itemSize == 'L':
+    #             j.Stock_L = j.Stock_L - 1
+    #         elif i.itemSize == 'XL':
+    #             j.Stock_XL = j.Stock_XL - 1
+    #         x = Purchase(price=i.price, buyerId=request.user.id, itemSize=i.itemSize, itemName=i.itemName)
+    #         x.save()
+    #         j.save()
+    #         i.delete()
+    # return redirect('home')
+
+#@csrf_exempt
+def buyItem(request, item_id):
+
+    item = get_object_or_404(Item, pk=item_id)
+    #context = {'item': item}
+
+    YOUR_DOMAIN = "http://127.0.0.1:8000/kiwinco/"
+    stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            billing_address_collection='auto',
+            shipping_address_collection={
+              'allowed_countries': ['NZ'],
+            },
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    #'price': 'price_1N6eFXJDzpA491w3wbEEK3GH',
+                    'price_data': {
+                        'currency': 'nzd',
+                        'product_data' : {
+                            'name' : item.ItemName,
+                        },
+                        'unit_amount' : item.Price,
+
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=YOUR_DOMAIN + 'success',
+            cancel_url=YOUR_DOMAIN + 'cancel',
+            automatic_tax={'enabled': True},
+    )
+    except Exception as e:
+        return HttpResponse(e)
+
+    return redirect(checkout_session.url, code=303) 
+    
+    #return render(request, 'kiwinco/purchase.html', context)
+
+
+
+
+    # if request.user.is_authenticated:
+
+    #     u = Item.objects.get(id=request.POST['id'])
+    #     if request.POST['size'] == 'XS':
+    #         u.Stock_XS = u.Stock_XS-1
+    #     elif request.POST['size'] == 'S':
+    #         u.Stock_S = u.Stock_S - 1
+    #     elif request.POST['size'] == 'M':
+    #         u.Stock_M = u.Stock_M - 1
+    #     elif request.POST['size'] == 'L':
+    #         u.Stock_L = u.Stock_L - 1
+    #     elif request.POST['size'] == 'XL':
+    #         u.Stock_XL = u.Stock_XL - 1
+    #     x = Purchase(price=u.Price, buyerId=request.user.id, itemSize=request.POST['size'], itemName=u.ItemName)
+    #     x.save()
+    #     u.save()
+
+    # return redirect('home')
+
+
+def create_checkout_session(request):
+    #TEMP!!!!!!
+    YOUR_DOMAIN = "http://127.0.0.1:8000/"
+    stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            billing_address_collection='auto',
+            shipping_address_collection={
+              'allowed_countries': ['NZ'],
+            },
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    #'price': 'price_1N6eFXJDzpA491w3wbEEK3GH',
+                    'price_data': {
+                        'currency': 'nzd',
+                        'product_data' : {
+                            'name' : 'temp',
+                        },
+                        'unit_amount' : 1000,
+
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=YOUR_DOMAIN + 'kiwinco/success',
+            cancel_url=YOUR_DOMAIN + 'kiwinco/cancel',
+            automatic_tax={'enabled': True},
+    )
+    except Exception as e:
+        return HttpResponse(e)
+
+    return redirect(checkout_session.url, code=303)
+
+def success(request):
+    return render(request, 'kiwinco/success.html')
+
+def successC(request):
+    if request.user.is_authenticated:
         u = CartedItem.objects.filter(buyerId=request.user.id)
         for i in u:
             j = Item.objects.get(pk=i.itemId)
@@ -292,29 +463,62 @@ def buyCart(request):
                 j.Stock_L = j.Stock_L - 1
             elif i.itemSize == 'XL':
                 j.Stock_XL = j.Stock_XL - 1
-            x = Purchase(price=i.price, buyerId=request.user.id, itemSize=i.itemSize, itemName=i.itemName)
+            x = Purchase(Price=i.price, buyerId=request.user.id, itemSize=i.itemSize, itemName=i.itemName)
             x.save()
             j.save()
             i.delete()
-    return redirect('home')
+    return render(request, 'kiwinco/success.html')
+
+def cancel(request):
+    return render(request, 'kiwinco/cancel.html')
+
+
+stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
 @csrf_exempt
-def buyItem(request):
-    if request.user.is_authenticated:
+def webhook(request):
+  payload = request.body
+  sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+  event = None
 
-        u = Item.objects.get(id=request.POST['id'])
-        if request.POST['size'] == 'XS':
-            u.Stock_XS = u.Stock_XS-1
-        elif request.POST['size'] == 'S':
-            u.Stock_S = u.Stock_S - 1
-        elif request.POST['size'] == 'M':
-            u.Stock_M = u.Stock_M - 1
-        elif request.POST['size'] == 'L':
-            u.Stock_L = u.Stock_L - 1
-        elif request.POST['size'] == 'XL':
-            u.Stock_XL = u.Stock_XL - 1
-        x = Purchase(price=u.Price, buyerId=request.user.id, itemSize=request.POST['size'], itemName=u.ItemName)
-        x.save()
-        u.save()
+  try:
+    event = stripe.Webhook.construct_event(
+      payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+    )
+  except ValueError as e:
+    # Invalid payload
+    return HttpResponse(status=400)
+  except stripe.error.SignatureVerificationError as e:
+    # Invalid signature
+    return HttpResponse(status=400)
+  
+  if event['type'] == 'checkout.session.completed':
+    # Retrieve the session. If you require line items in the response, you may include them by expanding line_items.
+    session = stripe.checkout.Session.retrieve(
+    event['data']['object']['id'],
+    expand=['line_items'],
+    )
 
-    return redirect('home')
+    customer_email = session["customer_details"]["email"]
+
+    send_mail(
+        subject = "KiwiNCo Purchace Completed",
+        message = "Thank you for your purchace",
+        recipient_list=[customer_email],
+        from_email="adamts028@gmail.com"
+    )
+
+    send_mail(
+        subject = "KiwiNCo Incoming Order",
+        message = "Order",
+        recipient_list=["adamts028@gmail.com"],
+        from_email="adamts028@gmail.com"
+    )
+
+    line_items = session.line_items
+    # Fulfill the purchase...
+    #print(session)
+    # fulfill_order(line_items)
+
+  # Passed signature verification
+  return HttpResponse(status=200)

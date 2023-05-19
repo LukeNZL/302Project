@@ -35,7 +35,7 @@
             <div id="main-item-image-box">
                 <img id="main-item-image" src="{{ items.Image.url }}" alt="">
             </div>
-            <div id="main-item-cost">${{ items.Price }}</div>
+            <div id="main-item-cost">${{ items.getDisplayPrice }}</div>
         </a>
 
     {% endfor %}

@@ -9,10 +9,15 @@ urlpatterns = [
     path('logout/', views.logoutUser, name='logout'),
     #path('register/', views.registerPage, name='register'),
     path('<int:item_id>/', views.item, name='item'),
+    path('create-checkout-session/', views.create_checkout_session, name='create-checkout-session'),
     path('<str:catagory>/', views.catagory, name='catagory'),
     path('addToCart/<int:item_id>', views.addToCart, name='addToCart'),
     path('removeFromCart', views.removeFromCart, name='removeFromCart'),
     path('buyCart', views.buyCart, name='buyCart'),
-    path('buyItem', views.buyItem, name='buyItem'),
+    path('buyItem/<int:item_id>', views.buyItem, name='buyItem'),
+    path('success', views.success, name='success'),
+    path('successC', views.successC, name='successC'),
+    path('cancel', views.cancel, name='cancel'),
+    path('webhook', views.webhook, name='webhook'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
