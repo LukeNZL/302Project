@@ -11,6 +11,10 @@ from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 import stripe
 from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+import requests
 # Create your views here.
 
 def home(request):
@@ -33,13 +37,43 @@ def home(request):
         if "register" in request.POST:  # add the name "register" in your html button
             form = RegisterForm(request.POST)
             if form.is_valid():
+                # Get the user input from the request
+                #username = request.POST.get('username')
+                #password = request.POST.get('password')
+                username = form.cleaned_data['username']
+                password = form.cleaned_data['password1']
+                #email = request.POST.get('email')
+                
+                #POST request to create a new user
+                url = 'http://127.0.0.1:8000/create/'  # Replace with your API endpoint
+                data = {
+                    'username': username,
+                    'password': password,
+                    #'email': email
+                }
+                response = requests.post(url, data=data)
+                messages.add_message(request, messages.INFO, 'User created successfully')
+                """if response.status_code == 201:
+                    # User created successfully
+                    return redirect('home.html')"""
+            else:
+                # Error creating user
+                messages.error(request, 'An error occurred during registration')
+
+        
+            login(request, user)
+
+            return redirect('home')  
+          
+            """form = RegisterForm(request.POST)
+            if form.is_valid():
                 user = form.save(commit=False)
                 user.username = user.username.lower()
                 user.save()
                 login(request, user)
                 return redirect('home')
             else:
-                messages.error(request, 'An error occurred during registration')
+                messages.error(request, 'An error occurred during registration')"""
 
         if "login" in request.POST:  # add the name "login" in your html button
             username = request.POST.get('username').lower()

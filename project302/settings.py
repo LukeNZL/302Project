@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
+from django.conf import settings
 #text
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'project302',
+    'rest_framework',
+    'rest_framework_simplejwt',
     
 ]
 
@@ -139,32 +143,61 @@ USE_I18N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-AWS_STORAGE_BUCKET_NAME = 'kiwinco-app-bucket'
-AWS_S3_REGION_NAME = 'ap-southeast-2'
+#AWS_STORAGE_BUCKET_NAME = 'kiwinco-app-bucket'
+#AWS_S3_REGION_NAME = 'ap-southeast-2'
 
 
 
-AWS_S3_ACCESS_KEY_ID = 'AKIAVMXNK6O7YQCXGRGT'
-AWS_S3_SECRET_ACCESS_KEY = '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'
+#AWS_S3_ACCESS_KEY_ID = 'AKIAVMXNK6O7YQCXGRGT'
+#AWS_S3_SECRET_ACCESS_KEY = '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'
 
 
 
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_OBJECT_PARAMETERS = {
-   'CacheControl': 'max-age=86400',
-}
-AWS_S3_FILE_OVERWRITE = False
+#AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+#AWS_S3_OBJECT_PARAMETERS = {
+#   'CacheControl': 'max-age=86400',
+#}
+#AWS_S3_FILE_OVERWRITE = False
 #AWS_DEFAULT_ACL = 'public-read'
-AWS_DEFAULT_ACL = None
-AWS_LOCATION = 'static'
-STATICFILES_DIRS = [
-   'static',
-]
-STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#AWS_DEFAULT_ACL = None
+#AWS_LOCATION = 'static'
+#STATICFILES_DIRS = [
+#   'static',
+#]
+STATIC_URL = '/static/'
+#STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 #STATIC_ROOT = 'static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
