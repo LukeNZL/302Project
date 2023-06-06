@@ -13,7 +13,10 @@ import stripe
 from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.contrib.auth.models import AnonymousUser
+
+
 import requests
 # Create your views here.
 
@@ -60,9 +63,6 @@ def home(request):
                 # Error creating user
                 messages.error(request, 'An error occurred during registration')
 
-        
-            login(request, user)
-
             return redirect('home')  
           
             """form = RegisterForm(request.POST)
@@ -76,7 +76,45 @@ def home(request):
                 messages.error(request, 'An error occurred during registration')"""
 
         if "login" in request.POST:  # add the name "login" in your html button
-            username = request.POST.get('username').lower()
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            
+          
+            url = 'http://127.0.0.1:8000/login/'
+            data = {
+                "username": username,
+                "password": password,
+                 
+            }
+
+            
+            response = requests.post(url, data=data)
+            if response.status_code == 200:
+                print(response.json())#using to ensure info is recieved by api in terminal
+                print(request.user)
+                print(request.session)
+                #ended here luke https://www.django-rest-framework.org/api-guide/authentication/ changing to sesison bases auth HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+                access_token = response.json().get('access_token')
+                refresh_token = response.json().get('refresh_token')
+                
+                #request.user['id'] = response.json().get('id')
+                #request.user['username'] = response.json().get('username')
+                #request.user['access_token'] = AccessToken(access_token)
+                #request.user['refresh_token'] = RefreshToken(refresh_token)
+                
+                
+                
+                messages.add_message(request, messages.INFO, username + ' logged in successfully')
+                messages.add_message(request, messages.INFO, 'User logged in successfully')
+            else:
+                messages.error(request, 'An error occurred during login attempt')
+            
+            return redirect('home')  
+
+            
+            
+            
+            """username = request.POST.get('username').lower()
             password = request.POST.get('password')
 
             try:
@@ -88,7 +126,7 @@ def home(request):
                 login(request, user)
                 return redirect('home')
             else:
-                messages.error(request, 'Username or password does not exist')
+                messages.error(request, 'Username or password does not exist')"""
     ## login ##
 
     context = { 'shirt_list':shirt_list, 'jumper_list':jumper_list, 'pants_list':pants_list, 'featured_list':featured_list, 'form': form}
