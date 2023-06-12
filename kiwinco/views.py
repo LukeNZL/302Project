@@ -9,25 +9,151 @@ from.forms import RegisterForm
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
-import stripe
+import stripe, json
 from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import AnonymousUser
+from rest_framework.exceptions import AuthenticationFailed
+import jwt, datetime
 
 
 import requests
 # Create your views here.
 
+def loginPage(request):
+    #if "login" in request.POST:  # add the name "login" in your html button
+    if request.method == 'POST':
+        if "login" in request.POST:
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+            
+            url = 'http://127.0.0.1:8000/api/login/'
+            data = {
+                "email": email,
+                "password": password,
+                    
+            }
+
+            
+            response = requests.post(url, data=data)
+            #print(response.json())
+            token=response.json().get('jwt')
+            #print("************************************token" )
+            #print(token)
+            request.session['jwt'] = token
+            if response.status_code == 200: 
+                token = request.session.get('jwt')
+
+                url = 'http://127.0.0.1:8000/api/user/'
+                headers = {
+                    'Authorization': token
+                }
+                
+                
+                userdata=requests.get(url, headers=headers)
+                #print("************************************" )
+                user = userdata.json() 
+                print(user)
+                
+               
+                messages.add_message(request, messages.INFO, user.get('username') + ' logged in successfully')
+                return render(request, 'kiwinco/home.html', {'user': user})
+
+                #messages.add_message(request, messages.INFO, 'User logged in successfully')
+            else:
+                messages.error(request, 'An error occurred during login attempt')
+                return redirect('login')
+           
+    return render(request,'kiwinco/login.html')
+        
+def registerPage(request):
+    if request.method == 'POST':
+        #if "register" in request.POST:  # add the name "register" in your html button
+        form = RegisterForm(request.POST)
+        #print(form.data)
+        if form.is_valid():
+            # Get the user input from the request
+            #username = request.POST.get('username')
+            #password = request.POST.get('password')
+            username = form.data['username']
+            password = form.data['password1']
+            email = form.data['email']
+            
+            #POST request to create a new user
+            url = 'http://127.0.0.1:8000/api/create/'  # Replace with your API endpoint
+            data = {
+                'username': username,
+                'email': email,
+                'password': password,
+                
+            }
+            response = requests.post(url, data=data)
+            
+            if response.status_code == 201:
+                messages.add_message(request, messages.INFO, 'User created successfully')
+                # User created successfully
+                return redirect('home')
+            elif response.status_code == 400:
+                messages.add_message(request, messages.INFO, 'There is already an existing account for the provided email, try again')
+                return redirect('home')
+            else:
+                messages.add_message(request, messages.INFO, 'UNKNOWN ERROR')
+                return redirect('home')
+
+        
+        else:
+            # Error creating user
+            messages.error(request, 'An error occurred during registration, please ensure you are using a valid email address and password')
+
+    return render(request, 'kiwinco/register.html')
+
+
+
+def accountPage(request):
+    
+    token = request.session.get('jwt')
+
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    if userdata.status_code == 200:
+        user = userdata.json()
+        return render(request, 'kiwinco/account.html', {'user': user})
+    else:
+        # Handle the error appropriately
+        error_message = 'Unable to retrieve user data. Please try again later.'
+        return render(request, 'kiwinco/error.html', {'error_message': error_message})
+
+
+    
+
 def home(request):
+    
+    
+    token = request.session.get('jwt')
+
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    
+    context = {'user': user}
+    
     shirt_list = Item.objects.filter(Shirt = True)[:7]
     jumper_list = Item.objects.filter(Jumper_Jacket=True)[:7]
     pants_list = Item.objects.filter(Pants=True)[:7]
     featured_list = Item.objects.filter(Featured=True)[:7]
 
-    form = RegisterForm()
-
+    #user=None
     ##search##
     if request.method == 'GET':
         if "search" in request.GET:
@@ -36,34 +162,7 @@ def home(request):
     ##search##
 
     ## login ##
-    if request.method == 'POST':
-        if "register" in request.POST:  # add the name "register" in your html button
-            form = RegisterForm(request.POST)
-            if form.is_valid():
-                # Get the user input from the request
-                #username = request.POST.get('username')
-                #password = request.POST.get('password')
-                username = form.cleaned_data['username']
-                password = form.cleaned_data['password1']
-                #email = request.POST.get('email')
-                
-                #POST request to create a new user
-                url = 'http://127.0.0.1:8000/create/'  # Replace with your API endpoint
-                data = {
-                    'username': username,
-                    'password': password,
-                    #'email': email
-                }
-                response = requests.post(url, data=data)
-                messages.add_message(request, messages.INFO, 'User created successfully')
-                """if response.status_code == 201:
-                    # User created successfully
-                    return redirect('home.html')"""
-            else:
-                # Error creating user
-                messages.error(request, 'An error occurred during registration')
-
-            return redirect('home')  
+   
           
             """form = RegisterForm(request.POST)
             if form.is_valid():
@@ -75,41 +174,7 @@ def home(request):
             else:
                 messages.error(request, 'An error occurred during registration')"""
 
-        if "login" in request.POST:  # add the name "login" in your html button
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-            
-          
-            url = 'http://127.0.0.1:8000/login/'
-            data = {
-                "username": username,
-                "password": password,
-                 
-            }
-
-            
-            response = requests.post(url, data=data)
-            if response.status_code == 200:
-                print(response.json())#using to ensure info is recieved by api in terminal
-                print(request.user)
-                print(request.session)
-                #ended here luke https://www.django-rest-framework.org/api-guide/authentication/ changing to sesison bases auth HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-                access_token = response.json().get('access_token')
-                refresh_token = response.json().get('refresh_token')
-                
-                #request.user['id'] = response.json().get('id')
-                #request.user['username'] = response.json().get('username')
-                #request.user['access_token'] = AccessToken(access_token)
-                #request.user['refresh_token'] = RefreshToken(refresh_token)
-                
-                
-                
-                messages.add_message(request, messages.INFO, username + ' logged in successfully')
-                messages.add_message(request, messages.INFO, 'User logged in successfully')
-            else:
-                messages.error(request, 'An error occurred during login attempt')
-            
-            return redirect('home')  
+       
 
             
             
@@ -129,11 +194,11 @@ def home(request):
                 messages.error(request, 'Username or password does not exist')"""
     ## login ##
 
-    context = { 'shirt_list':shirt_list, 'jumper_list':jumper_list, 'pants_list':pants_list, 'featured_list':featured_list, 'form': form}
+    context = { 'shirt_list':shirt_list, 'jumper_list':jumper_list, 'pants_list':pants_list, 'featured_list':featured_list}
 
     ##cart##
-    if request.user.is_authenticated:
-        cart = CartedItem.objects.filter(buyerId = request.user.id)
+    if user.get('id') is not None:
+        cart = CartedItem.objects.filter(buyerId = user.get('id'))
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
@@ -143,9 +208,19 @@ def home(request):
     return render(request, 'kiwinco/home.html', context)
 
 def item(request, item_id):
-    item = get_object_or_404(Item, pk=item_id)
+    token = request.session.get('jwt')
 
-    form = RegisterForm()
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    
+    
+    
+    item = get_object_or_404(Item, pk=item_id)
 
     ##search##
     if request.method == 'GET':
@@ -154,41 +229,11 @@ def item(request, item_id):
             return redirect('/kiwinco/' + search_value)
     ##search##
 
-
-    ## login ##
-    if request.method == 'POST':
-        if "register" in request.POST:  # add the name "register" in your html button
-            form = RegisterForm(request.POST)
-            if form.is_valid():
-                user = form.save(commit=False)
-                user.username = user.username.lower()
-                user.save()
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.error(request, 'An error occurred during registration')
-
-        if "login" in request.POST:  # add the name "login" in your html button
-            username = request.POST.get('username').lower()
-            password = request.POST.get('password')
-
-            try:
-                user = User.objects.get(username=username)
-            except:
-                messages.error(request, 'User does not exist')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.error(request, 'Username or password does not exist')
-    ## login ##
-
-    context = {'item': item, 'form': form}
+    context = {'item': item}
 
     ##cart##
-    if request.user.is_authenticated:
-        cart = CartedItem.objects.filter(buyerId = request.user.id)
+    if user.get('id') is not None:
+        cart = CartedItem.objects.filter(buyerId = user.get('id'))
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
@@ -320,8 +365,34 @@ def catagory(request,catagory):
 #     return render(request, 'kiwinco/home.html', context)
 
 def logoutUser(request):
-    logout(request)
-    return redirect('home')
+    token = request.session.get('jwt')
+
+    url = 'http://127.0.0.1:8000/api/logout/'
+    headers = {
+        'Authorization': token
+    }
+    
+    response = requests.post(url, headers=headers)
+    context=dict()
+    print(response)
+    print(response.json())
+    if response.status_code == 200:
+        messages.add_message(request, messages.INFO, 'User logged out successfully')
+        request.session.delete('jwt')
+    else:
+        messages.add_message(request, messages.INFO, 'Unable to logout user, try again')
+        token = request.session.get('jwt')
+
+        url = 'http://127.0.0.1:8000/api/user/'
+        headers = {
+            'Authorization': token
+        }
+        userdata=requests.get(url, headers=headers)
+        print("************************************" )
+        user = userdata.json()
+        context={'user':user}
+        return render(request, 'kiwinco/home.html', context)
+    return render(request, 'kiwinco/home.html')
 
 @csrf_exempt
 def addToCart(request, item_id):

@@ -35,13 +35,23 @@
         </form>
     </div>
 
-    <div id="account-image-box" onclick=showAccount()>
+    <!--<div id="account-image-box" onclick=showAccount()>
         <img id="account-image" src="{% static 'images/Account.png' %}">
-    </div>
+    </div>-->
+   
+    <a id="account-image-box" href="{% url 'account' %}">
+        <img id="account-image" src="{% static 'images/Account.png' %}" >
+ 
+    <a id="account-image-box" href="{% url 'login' %}">
+        <img id="account-image" src="{% static 'images/Account.png' %}" >
+        
+    </a>
+  
+
 
     <div id="account-container">
-        {% if request.user.is_authenticated %}
-        <p id="display-user">Logged in as {{request.user}}</p>
+        {% if user == None %}
+        <p id="display-user">Logged in as {{user.username}}</p>
         <a href="{% url 'logout' %}" class="login-button">Logout</a>
         {% else %}
         <div id="login-signup-button">
@@ -54,7 +64,7 @@
                 {% csrf_token %}
                 <!--Login form-->
                 <div class="login-box">
-                    <input class="user-input" type="text" placeholder="Username" name="username">
+                    <input class="user-input" type="text" placeholder="Email" name="email">
                     <input class="user-input" type="password" placeholder="Password" name="password">
                     <div>
                         <button class="login-button" type="submit" name="login">Login</button>
@@ -68,9 +78,10 @@
                 {% csrf_token %}
                 <!--Signup form that only works with no closing-->
                 <div class="login-box">
-                    <input class="user-input" placeholder="Username" action="{{form.username}}
-                    <input class="user-input" placeholder="Password" type="password" action="{{form.password1}}
-                    <input class="user-input" placeholder="Confirm Password" type="password" action="{{form.password2}}
+                    <input class="user-input" placeholder="Username" name="username">
+                    <input class="user-input" placeholder="Email" name="email">
+                    <input class="user-input" placeholder="Password" name="password1">
+                    <input class="user-input" placeholder="Confirm Password" name="password2">
                     <div>
                         <button class="login-button" type="submit" name="register">Sign Up</button>
                     </div>
@@ -78,8 +89,9 @@
             </form>
         </div>
         {% endif %}
-     <!--   {% if request.user.is_authenticated %}
-        <p id="display-user">Logged in as {{request.user}}</p>
+        
+     <!--   {% if user %}
+        <p id="display-user">Logged in as {{user}}</p>
         <a href="{% url 'logout' %}" class="header-button">Logout</a>
         {% else %}
         <h3>Login</h3>

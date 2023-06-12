@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<body>
+    
+    <div>
+        <h1>Account Page</h1>
+
+        <p>Welcome, {{ user.username }}!</p>
+
+        <p>your account details.</p>
+
+        <p>Email: {{user.email}}</p>
+
+        <p><a href="{% url 'logout' %}">Logout</a></p>
+    </div>
+
+    <footer>
+    </footer>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<body>
+    <h1>Register</h1>
+
+    <div>
+        <form method="POST" action="">
+            {% csrf_token %}
+            <input type="text" placeholder="Username" name="username" required>
+            <br><br>
+            <input type="email" placeholder="Email" name="email" required>
+            <br><br>
+            <input type="password" placeholder="Password" name="password1" required>
+            <br><br>
+            <input type="password" placeholder="Confirm Password" name="password2" required>
+            <br><br>
+            <button class="login-button" type="submit" name="register">Sign Up</button>
+        </form>
+    
+    
+    </div>
+
+
+<p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+
+
+<footer>
+</footer>
+</body>
+</html>
+{% endblock %}

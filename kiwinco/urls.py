@@ -6,10 +6,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('kiwinco/', views.home, name='home'),
-    #path('login/', views.loginPage, name='login'),
+    path('kiwinco/', views.home, name='kiwinco'),
+    path('login/', views.loginPage, name='login'),
     path('logout/', views.logoutUser, name='logout'),
-    #path('register/', views.registerPage, name='register'),
+    path('account/', views.accountPage, name='account'),
+
+    path('register/', views.registerPage, name='register'),
     path('<int:item_id>/', views.item, name='item'),
     path('create-checkout-session/', views.create_checkout_session, name='create-checkout-session'),
     path('<str:catagory>/', views.catagory, name='catagory'),
@@ -25,3 +27,5 @@ urlpatterns = [
     #path('login/', UserLogin.as_view(), name='login'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+#landing page, logged in page

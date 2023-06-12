@@ -1,7 +1,7 @@
 from typing import Any
 from django.db import models
-from django.contrib.auth.models import User
 import uuid
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class CartedItem(models.Model):
@@ -48,5 +48,8 @@ class Purchase(models.Model):
     
     def __str__(self):
         return self.orderID
+    
+
+    
 
   
