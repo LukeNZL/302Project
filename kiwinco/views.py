@@ -56,6 +56,8 @@ def loginPage(request):
                 userdata=requests.get(url, headers=headers)
                 #print("************************************" )
                 user = userdata.json() 
+                user['logged_in'] = True
+
                 print(user)
                 
                
@@ -124,20 +126,47 @@ def accountPage(request):
     userdata=requests.get(url, headers=headers)
     if userdata.status_code == 200:
         user = userdata.json()
-        return render(request, 'kiwinco/account.html', {'user': user})
+        user['logged_in'] = True
+
+        print(user)
+        ##cart##
+        if user['logged_in']==True:
+            cart = CartedItem.objects.filter(buyerId = user['id'])
+            total = sum(cart.values_list('price', flat=True))
+            context=dict()
+            context['cart']=cart
+            context['total'] = total/100
+        ##cart##
+        context['user'] = user
+        return render(request, 'kiwinco/account.html', context)
     else:
         # Handle the error appropriately
-        error_message = 'Unable to retrieve user data. Please try again later.'
+        error_message = 'Unable to retrieve user data. You may not be logged in Please try again later.'
         return render(request, 'kiwinco/error.html', {'error_message': error_message})
-
-
-    
-
-def home(request):
-    
+def deleteAccount(request):
     
     token = request.session.get('jwt')
 
+    url = 'http://127.0.0.1:8000/api/delete/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.post(url, headers=headers)
+    print(userdata)
+    if userdata.status_code == 200:
+        #user = userdata.json()
+        #return render(request, 'kiwinco/account.html', {'user': user})
+        messages.add_message(request, messages.INFO, 'User Deleted successfully')
+        del request.session['jwt']
+        return render(request, 'kiwinco/home.html')
+
+    else:
+        # Handle the error appropriately
+        error_message = 'Unable to delete account.'
+        return render(request, 'kiwinco/error.html', {'error_message': error_message})
+def editAccount(request):
+    token = request.session.get('jwt')
     url = 'http://127.0.0.1:8000/api/user/'
     headers = {
         'Authorization': token
@@ -145,8 +174,81 @@ def home(request):
     
     userdata=requests.get(url, headers=headers)
     user = userdata.json()
+    if userdata.status_code == 200:
+        user['logged_in'] = True
+   
+    if request.method == 'POST':
+        #if "register" in request.POST:  # add the name "register" in your html button
+        form = RegisterForm(request.POST)
+        print("###################################")
+        print(form.data)
+        if form.is_valid():
+            
+            # Get the user input from the request
+            username = form.data['username']
+            password = form.data['password1']
+            email = form.data['email']
+            
+            #POST request to create a new user
+            url = 'http://127.0.0.1:8000/api/edit/'  # Replace with your API endpoint
+            data = {
+                'username': username,
+                'email': email,
+                'password': password,
+                
+            }
+            response = requests.put(url, data=data, headers=headers)
+            print("response###################################")
+            print(response)
+            if response.status_code == 200:
+                messages.add_message(request, messages.INFO, 'Your Details Have been Updated successfully')
+                # User created successfully
+                return redirect('account')
+            elif response.status_code == 400:
+                messages.add_message(request, messages.INFO, 'There is already an existing account for the provided email, try again')
+                return redirect('account')
+            else:
+                messages.add_message(request, messages.INFO, 'UNKNOWN ERROR')
+                return redirect('account')
+
     
-    context = {'user': user}
+        else:
+            # Error updating user
+            messages.error(request, 'An error occurred during Edit, please ensure you are using a valid email address and password')
+    context=dict()
+    ##cart##
+    if user['logged_in']==True:
+        cart = CartedItem.objects.filter(buyerId = user['id'])
+        total = sum(cart.values_list('price', flat=True))
+
+        context['cart']=cart
+        context['total'] = total/100
+    ##cart##
+    context['user'] = user
+
+    return render(request, 'kiwinco/accountedit.html',context)
+
+
+def home(request):
+    
+    
+    token = request.session.get('jwt')
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    user['logged_in'] = False
+
+    if userdata.status_code == 200:
+        user['logged_in'] = True
+
+    print(userdata)
+    print (user)
+   
+    #context = {'user': user}
     
     shirt_list = Item.objects.filter(Shirt = True)[:7]
     jumper_list = Item.objects.filter(Jumper_Jacket=True)[:7]
@@ -158,7 +260,7 @@ def home(request):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/kiwinco/' + search_value)
+            return redirect('/' + search_value)
     ##search##
 
     ## login ##
@@ -197,15 +299,18 @@ def home(request):
     context = { 'shirt_list':shirt_list, 'jumper_list':jumper_list, 'pants_list':pants_list, 'featured_list':featured_list}
 
     ##cart##
-    if user.get('id') is not None:
-        cart = CartedItem.objects.filter(buyerId = user.get('id'))
+    if user['logged_in']==True:
+        cart = CartedItem.objects.filter(buyerId = user['id'])
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total
+        context['total'] = total/100
     ##cart##
-
-    return render(request, 'kiwinco/home.html', context)
+    context['user'] = user
+    
+   
+    #return render(request, 'kiwinco/home.html',{'user': user})
+    return render(request, 'kiwinco/home.html',context)
 
 def item(request, item_id):
     token = request.session.get('jwt')
@@ -217,7 +322,10 @@ def item(request, item_id):
     
     userdata=requests.get(url, headers=headers)
     user = userdata.json()
-    
+    user['logged_in'] = False
+
+    if userdata.status_code == 200:
+        user['logged_in'] = True
     
     
     item = get_object_or_404(Item, pk=item_id)
@@ -226,26 +334,38 @@ def item(request, item_id):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/kiwinco/' + search_value)
+            return redirect('/' + search_value)
     ##search##
 
     context = {'item': item}
 
     ##cart##
-    if user.get('id') is not None:
-        cart = CartedItem.objects.filter(buyerId = user.get('id'))
+    if user['logged_in']==True:
+        cart = CartedItem.objects.filter(buyerId = user['id'])
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total
+        context['total'] = total/100
     ##cart##
+    context['user'] = user
 
     return render(request, 'kiwinco/item.html', context)
 
 def catagory(request,catagory):
 
-    form = RegisterForm()
+    token = request.session.get('jwt')
 
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    user['logged_in'] = False
+
+    if userdata.status_code == 200:
+        user['logged_in'] = True
     item_list = Item.objects.order_by('created')
 
     sort_value = 'Newest-Release'
@@ -255,7 +375,8 @@ def catagory(request,catagory):
     if request.method == 'GET':
         if "search" in request.GET:
             search_value = request.GET['search']
-            return redirect('/kiwinco/' + search_value)
+            return redirect('/' + search_value)
+        
     ##search##
 
     if 'sort_value' in request.GET:
@@ -284,85 +405,20 @@ def catagory(request,catagory):
         item_list = item_list.filter(ItemName__contains=catagory)
         catagory = 'Search Result: "' + catagory + '"'
 
-    ## login ##
-    if request.method == 'POST':
-        if "register" in request.POST:  # add the name "register" in your html button
-            form = RegisterForm(request.POST)
-            if form.is_valid():
-                user = form.save(commit=False)
-                user.username = user.username.lower()
-                user.save()
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.error(request, 'An error occurred during registration')
 
-        if "login" in request.POST:  # add the name "login" in your html button
-            username = request.POST.get('username').lower()
-            password = request.POST.get('password')
-
-            try:
-                user = User.objects.get(username=username)
-            except:
-                messages.error(request, 'User does not exist')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.error(request, 'Username or password does not exist')
-    ## login ##
-
-    context = {'catagory': catagory, 'item_list': item_list, 'sort_value': sort_value, 'form': form}
+    context = {'catagory': catagory, 'item_list': item_list, 'sort_value': sort_value,}
 
     ##cart##
-    if request.user.is_authenticated:
-        cart = CartedItem.objects.filter(buyerId = request.user.id)
+    if user['logged_in']==True:
+        cart = CartedItem.objects.filter(buyerId = user['id'])
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total
+        context['total'] = total/100
     ##cart##
+    context['user'] = user
 
     return render(request, 'kiwinco/catagory.html', context)
-
-# def registerPage(request):
-#     form = RegisterForm()
-#
-#     if request.method == 'POST':
-#         form = RegisterForm(request.POST)
-#         if form.is_valid():
-#             user = form.save(commit=False)
-#             user.username = user.username.lower()
-#             user.save()
-#             login(request, user)
-#             return redirect('home')
-#         else:
-#             messages.error(request, 'An error occurred during registration')
-#
-#     return render(request, 'kiwinco/home.html', {'form': form})
-
-
-
-# def loginPage(request):
-#
-#     if request.method == 'POST':
-#         username = request.POST.get('username').lower()
-#         password = request.POST.get('password')
-#
-#         try:
-#             user = User.objects.get(username=username)
-#         except:
-#             messages.error(request, 'User does not exist')
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             return redirect('home')
-#         else:
-#             messages.error(request, 'Username or password does not exist')
-#     context = {'page': page}
-#
-#     return render(request, 'kiwinco/home.html', context)
 
 def logoutUser(request):
     token = request.session.get('jwt')
@@ -378,7 +434,7 @@ def logoutUser(request):
     print(response.json())
     if response.status_code == 200:
         messages.add_message(request, messages.INFO, 'User logged out successfully')
-        request.session.delete('jwt')
+        del request.session['jwt']
     else:
         messages.add_message(request, messages.INFO, 'Unable to logout user, try again')
         token = request.session.get('jwt')
@@ -396,9 +452,25 @@ def logoutUser(request):
 
 @csrf_exempt
 def addToCart(request, item_id):
+    token = request.session.get('jwt')
+
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    user['logged_in'] = False
+
+    if userdata.status_code == 200:
+        user['logged_in'] = True
+        
+        
+        
     if request.method == "POST":
-        if request.user.is_authenticated:
-            x = CartedItem(price=request.POST['price'], itemId=item_id, buyerId=request.user.id, itemSize=request.POST['size'], itemName=request.POST['name'])
+        if user['logged_in'] == True:
+            x = CartedItem(price=request.POST['price'], itemId=item_id,buyerId = user['id'], itemSize=request.POST['size'], itemName=request.POST['name'])
             x.save()
             # i = Item.objects.get(pk=item_id)
             # if request.POST['size'] == 'XS':
@@ -425,18 +497,33 @@ def removeFromCart(request):
 
 
 def buyCart(request):
-    if request.user.is_authenticated:
+    token = request.session.get('jwt')
 
-        cart = CartedItem.objects.filter(buyerId = request.user.id)
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    user['logged_in'] = False
+
+    if userdata.status_code == 200:
+        user['logged_in'] = True
+        
+    if user['logged_in'] == True:
+
+        cart = CartedItem.objects.filter(buyerId = user['id'])
         total = sum(cart.values_list('price', flat=True))
 
-        YOUR_DOMAIN = "http://127.0.0.1:8000/kiwinco/"
+        YOUR_DOMAIN = "http://127.0.0.1:8001/"
         stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
         try:
             checkout_session = stripe.checkout.Session.create(
                 billing_address_collection='auto',
                 shipping_address_collection={
+                #"name": user['username'],
                 'allowed_countries': ['NZ'],
                 },
                 line_items=[
@@ -455,13 +542,13 @@ def buyCart(request):
                     },
                 ],
                 mode='payment',
-                success_url=YOUR_DOMAIN + 'successC',
-                cancel_url=YOUR_DOMAIN + 'cancel',
+                success_url=YOUR_DOMAIN + '/successC',
+                cancel_url=YOUR_DOMAIN + '/cancel',
                 automatic_tax={'enabled': True},
         )
         except Exception as e:
             return HttpResponse(e)
-
+        messages.add_message(request, messages.INFO, 'Payment Cancelled')
         return redirect(checkout_session.url, code=303)
     
     else:
@@ -493,7 +580,7 @@ def buyItem(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     #context = {'item': item}
 
-    YOUR_DOMAIN = "http://127.0.0.1:8000/kiwinco/"
+    YOUR_DOMAIN = "http://127.0.0.1:8001/kiwinco/"
     stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
     try:
@@ -554,7 +641,7 @@ def buyItem(request, item_id):
 
 def create_checkout_session(request):
     #TEMP!!!!!!
-    YOUR_DOMAIN = "http://127.0.0.1:8000/"
+    YOUR_DOMAIN = "http://127.0.0.1:8001/"
     stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
     try:
@@ -592,8 +679,21 @@ def success(request):
     return render(request, 'kiwinco/success.html')
 
 def successC(request):
-    if request.user.is_authenticated:
-        u = CartedItem.objects.filter(buyerId=request.user.id)
+    token = request.session.get('jwt')
+
+    url = 'http://127.0.0.1:8000/api/user/'
+    headers = {
+        'Authorization': token
+    }
+    
+    userdata=requests.get(url, headers=headers)
+    user = userdata.json()
+    if userdata.status_code == 200:
+        user['logged_in'] = True
+        
+    if user['logged_in'] == True:
+
+        u = CartedItem.objects.filter(buyerId=user['id'])
         for i in u:
             j = Item.objects.get(pk=i.itemId)
             if i.itemSize == 'XS':
@@ -606,7 +706,7 @@ def successC(request):
                 j.Stock_L = j.Stock_L - 1
             elif i.itemSize == 'XL':
                 j.Stock_XL = j.Stock_XL - 1
-            x = Purchase(Price=i.price, buyerId=request.user.id, itemSize=i.itemSize, itemName=i.itemName)
+            x = Purchase(Price=i.price, buyerId=user['id'], itemSize=i.itemSize, itemName=i.itemName)
             x.save()
             j.save()
             i.delete()

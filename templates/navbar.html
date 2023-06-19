@@ -38,93 +38,25 @@
     <!--<div id="account-image-box" onclick=showAccount()>
         <img id="account-image" src="{% static 'images/Account.png' %}">
     </div>-->
-   
-    <a id="account-image-box" href="{% url 'account' %}">
-        <img id="account-image" src="{% static 'images/Account.png' %}" >
- 
-    <a id="account-image-box" href="{% url 'login' %}">
-        <img id="account-image" src="{% static 'images/Account.png' %}" >
-        
-    </a>
-  
 
 
-    <div id="account-container">
-        {% if user == None %}
-        <p id="display-user">Logged in as {{user.username}}</p>
-        <a href="{% url 'logout' %}" class="login-button">Logout</a>
+
+
+    <div>
+        {% if user.logged_in %}
+            <a id="account-image-box" href="{% url 'account' %}">
+            <p>Logged in</p>
+            <img id="account-image" src="{% static 'images/LogggedInAccount.png' %}" >  
+            </a>
+
         {% else %}
-        <div id="login-signup-button">
-            <div onclick="showLogin()" class="header-button">LOGIN</div>
-            <div class="header-divider">|</div>
-            <div onclick="showSignup()" class="header-button">SIGN UP</div>
-        </div>
-        <div id="login_temp" style="display:none;">
-            <form method="POST">
-                {% csrf_token %}
-                <!--Login form-->
-                <div class="login-box">
-                    <input class="user-input" type="text" placeholder="Email" name="email">
-                    <input class="user-input" type="password" placeholder="Password" name="password">
-                    <div>
-                        <button class="login-button" type="submit" name="login">Login</button>
-                    </div>
 
-                </div>
-            </form>
-        </div>
-        <div id="signup" style="display:none;">
-            <form method="POST">
-                {% csrf_token %}
-                <!--Signup form that only works with no closing-->
-                <div class="login-box">
-                    <input class="user-input" placeholder="Username" name="username">
-                    <input class="user-input" placeholder="Email" name="email">
-                    <input class="user-input" placeholder="Password" name="password1">
-                    <input class="user-input" placeholder="Confirm Password" name="password2">
-                    <div>
-                        <button class="login-button" type="submit" name="register">Sign Up</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        {% endif %}
+            <a id="account-image-box" href="{% url 'login' %}">
+            <img id="account-image" src="{% static 'images/Account.png' %}" >
+            
+            </a>
+        {%endif%}
         
-     <!--   {% if user %}
-        <p id="display-user">Logged in as {{user}}</p>
-        <a href="{% url 'logout' %}" class="header-button">Logout</a>
-        {% else %}
-        <h3>Login</h3>
-        <form method="POST", action="">
-            {% csrf_token %}
-
-            <div class="login-box">
-                <input class="user-input" type="text" placeholder="Username" name="username">
-                <input class="user-input" type="password" placeholder="Password" name="password">
-                <div>
-                    <input class="login-button" type="submit" value="Login" />
-                </div>
-
-            </div>
-        </form>
-
-
-       <h3>Dont have an account?</h3>
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="login-box">
-                <input class="user-input" placeholder="Username" action="{{form.username}}">
-                <input class="user-input" placeholder="Password" type="password" action="{{form.password1}}">
-                <input class="user-input" placeholder="Confirm Password" type="password" action="{{form.password2}}">
-                <div>
-                    <input class="login-button" type="submit" value="Sign Up">
-                </div>
-
-            </div>
-        </form>
-
-        {% endif %} -->
 
     </div>
 
@@ -149,7 +81,16 @@
                 <div style="font-size: 22px">Total: ${{total}}</div>
                 <a style="font-size: 22px;" id="buy-button" href="{% url 'buyCart' %}">BUY CART</a>
             </div>
+        {% else %}
+            {% if user.logged_in %}
+                <p>CART EMPTY</p>  
 
+            {% else %}
+                <p>Please Register or Login to add items to your cart</p>  
+
+               
+            {%endif%}
+            
         {% endif %}
     </div>
 
@@ -159,6 +100,7 @@
 
     <script>
         function showCart(){
+
             document.addEventListener('click', function handleClickOutsideBox(event) {
             const box = document.getElementById('cart-container');
             const button = document.getElementById('cart-image-box');

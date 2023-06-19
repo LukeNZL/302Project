@@ -10,6 +10,8 @@ urlpatterns = [
     path('login/', views.loginPage, name='login'),
     path('logout/', views.logoutUser, name='logout'),
     path('account/', views.accountPage, name='account'),
+    path('delete/', views.deleteAccount, name='deleteuser'),
+    path('edit/', views.editAccount, name='edituser'),
 
     path('register/', views.registerPage, name='register'),
     path('<int:item_id>/', views.item, name='item'),
@@ -19,10 +21,10 @@ urlpatterns = [
     path('removeFromCart', views.removeFromCart, name='removeFromCart'),
     path('buyCart', views.buyCart, name='buyCart'),
     path('buyItem/<int:item_id>', views.buyItem, name='buyItem'),
-    path('success', views.success, name='success'),
-    path('successC', views.successC, name='successC'),
-    path('cancel', views.cancel, name='cancel'),
-    path('webhook', views.webhook, name='webhook'),
+    path('success/', views.success, name='success'),
+    path('successC/', views.successC, name='successC'),
+    path('cancel/', views.cancel, name='cancel'),
+    path('webhook/', views.webhook, name='webhook'),
     
     #path('login/', UserLogin.as_view(), name='login'),
 
