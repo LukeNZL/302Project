@@ -30,7 +30,7 @@ def loginPage(request):
             password = request.POST.get('password')
             
             
-            url = 'http://127.0.0.1:8000/api/login/'
+            url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/login/'
             data = {
                 "email": email,
                 "password": password,
@@ -47,7 +47,7 @@ def loginPage(request):
             if response.status_code == 200: 
                 token = request.session.get('jwt')
 
-                url = 'http://127.0.0.1:8000/api/user/'
+                url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
                 headers = {
                     'Authorization': token
                 }
@@ -85,7 +85,7 @@ def registerPage(request):
             email = form.data['email']
             
             #POST request to create a new user
-            url = 'http://127.0.0.1:8000/api/create/'  # Replace with your API endpoint
+            url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/create/'  # Replace with your API endpoint
             data = {
                 'username': username,
                 'email': email,
@@ -118,7 +118,7 @@ def accountPage(request):
     
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
@@ -147,7 +147,7 @@ def deleteAccount(request):
     
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/delete/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/delete/'
     headers = {
         'Authorization': token
     }
@@ -167,7 +167,7 @@ def deleteAccount(request):
         return render(request, 'kiwinco/error.html', {'error_message': error_message})
 def editAccount(request):
     token = request.session.get('jwt')
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
@@ -190,7 +190,7 @@ def editAccount(request):
             email = form.data['email']
             
             #POST request to create a new user
-            url = 'http://127.0.0.1:8000/api/edit/'  # Replace with your API endpoint
+            url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/edit/'  # Replace with your API endpoint
             data = {
                 'username': username,
                 'email': email,
@@ -233,12 +233,13 @@ def home(request):
     
     
     token = request.session.get('jwt')
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
     
     userdata=requests.get(url, headers=headers)
+    print(userdata)
     user = userdata.json()
     user['logged_in'] = False
 
@@ -315,7 +316,7 @@ def home(request):
 def item(request, item_id):
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
@@ -355,7 +356,7 @@ def catagory(request,catagory):
 
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
@@ -423,7 +424,7 @@ def catagory(request,catagory):
 def logoutUser(request):
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/logout/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/logout/'
     headers = {
         'Authorization': token
     }
@@ -454,7 +455,7 @@ def logoutUser(request):
 def addToCart(request, item_id):
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }
@@ -499,7 +500,7 @@ def removeFromCart(request):
 def buyCart(request):
     token = request.session.get('jwt')
 
-    url = 'http://127.0.0.1:8000/api/user/'
+    url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
     headers = {
         'Authorization': token
     }

@@ -45,8 +45,7 @@
     <div>
         {% if user.logged_in %}
             <a id="account-image-box" href="{% url 'account' %}">
-            <p>Logged in</p>
-            <img id="account-image" src="{% static 'images/LogggedInAccount.png' %}" >  
+            <img id="account-image" src="{% static 'images/LoggedInAccount.png' %}" >  
             </a>
 
         {% else %}
