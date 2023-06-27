@@ -1,246 +1,235 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Buy cool new product</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://js.stripe.com/v3/"></script>
-    <style>
-    * {
-  box-sizing: border-box;
-}
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  height: 100vh;
-  width: 100vw;
-}
-form {
-  width: 30vw;
-  min-width: 500px;
-  align-self: center;
-  border-radius: 7px;
-  padding: 40px;
-}
-input {
-  border-radius: 10px;
-  margin-bottom: 20px;
-  padding: 12px;
-  border: 1px solid rgba(50, 50, 93, 0.1);
-  height: 44px;
-  font-size: 16px;
-  width: 100%;
-  background: white;
-}
-.result-message {
-  line-height: 22px;
-  font-size: 16px;
-}
-.result-message a {
-  color: rgb(89, 111, 214);
-  font-weight: 600;
-  text-decoration: none;
-}
-.hidden {
-  display: none;
-}
-#card-error {
-  color: rgb(105, 115, 134);
-  text-align: left;
-  font-size: 13px;
-  line-height: 17px;
-  margin-top: 12px;
-}
-#card-element {
-  border-radius: 10px;
-  padding: 12px;
-  border: 1px solid rgba(50, 50, 93, 0.1);
-  height: 44px;
-  width: 100%;
-  background: white;
-}
-#payment-request-button {
-  margin-bottom: 32px;
-}
-/* Buttons and links */
-#submit {
-  background: #ffffff;
-  color: #000000;
-  font-family: Arial, sans-serif;
-  border-radius: 10px;
-  border-style: solid;
-  padding: 12px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: block;
-  transition: all 0.2s ease;
-  box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
-  width: 100%;
-  margin-top: 20px;
-}
-button:hover {
-  filter: contrast(115%);
-}
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-/* spinner/processing state, errors */
-.spinner,
-.spinner:before,
-.spinner:after {
-  border-radius: 50%;
-}
-.spinner {
-  color: #ffffff;
-  font-size: 22px;
-  text-indent: -99999px;
-  margin: 0px auto;
-  position: relative;
-  width: 20px;
-  height: 20px;
-  box-shadow: inset 0 0 0 2px;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-}
-.spinner:before,
-.spinner:after {
-  position: absolute;
-  content: "";
-}
-.spinner:before {
-  width: 10.4px;
-  height: 20.4px;
-  background: #5469d4;
-  border-radius: 20.4px 0 0 20.4px;
-  top: -0.2px;
-  left: -0.2px;
-  -webkit-transform-origin: 10.4px 10.2px;
-  transform-origin: 10.4px 10.2px;
-  -webkit-animation: loading 2s infinite ease 1.5s;
-  animation: loading 2s infinite ease 1.5s;
-}
-.spinner:after {
-  width: 10.4px;
-  height: 10.2px;
-  background: #5469d4;
-  border-radius: 0 10.2px 10.2px 0;
-  top: -0.1px;
-  left: 10.2px;
-  -webkit-transform-origin: 0px 10.2px;
-  transform-origin: 0px 10.2px;
-  -webkit-animation: loading 2s infinite ease;
-  animation: loading 2s infinite ease;
-}
-@-webkit-keyframes loading {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes loading {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@media only screen and (max-width: 600px) {
-  form {
-    width: 80vw;
-  }
-}
-#purchase-cart-box{
-  width: 500px;
-  height: 600px;
-  border-style: solid;
-  border-color: #000000;
-  border-width: 1px;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  margin-top: 50px;
-}
-#item-container{
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<body>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+
+    #payment-form {
+      width: 30vw;
+      min-width: 500px;
+      align-self: center;
+      border-radius: 7px;
+      padding: 40px;
+    }
+    #payment-input {
+      border-radius: 10px;
+      margin-bottom: 20px;
+      padding: 12px;
+      border: 1px solid rgba(50, 50, 93, 0.1);
+      height: 30px;
+      font-size: 16px;
+      width: 80%;
+      background: white;
+    }
+    .result-message {
+      line-height: 22px;
+      font-size: 16px;
+    }
+    .result-message a {
+      color: rgb(89, 111, 214);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .hidden {
+      display: none;
+    }
+    #card-error {
+      color: rgb(105, 115, 134);
+      text-align: left;
+      font-size: 13px;
+      line-height: 17px;
+      margin-top: 12px;
+    }
+    #card-element {
+      border-radius: 10px;
+      margin-bottom: 20px;
+      padding: 12px;
+      border: 1px solid rgba(50, 50, 93, 0.1);
+      height: 30px;
+      font-size: 16px;
+      width: 80%;
+      background: white;
+    }
+    #payment-request-button {
+      margin-bottom: 32px;
+    }
+    /* Buttons and links */
+    #submit {
+      background: #ffffff;
+      color: #000000;
+      font-family: Arial, sans-serif;
+      border-radius: 10px;
+      border-style: solid;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+      transition: all 0.2s ease;
+      box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+      height: 56px;
+      width: 85%;
+      margin-top: 20px;
+    }
+    button:hover {
+      filter: contrast(115%);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    /* spinner/processing state, errors */
+    .spinner,
+    .spinner:before,
+    .spinner:after {
+      border-radius: 50%;
+    }
+    .spinner {
+      color: #ffffff;
+      font-size: 22px;
+      text-indent: -99999px;
+      margin: 0px auto;
+      position: relative;
+      width: 20px;
+      height: 20px;
+      box-shadow: inset 0 0 0 2px;
+      -webkit-transform: translateZ(0);
+      -ms-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    .spinner:before,
+    .spinner:after {
+      position: absolute;
+      content: "";
+    }
+    .spinner:before {
+      width: 10.4px;
+      height: 20.4px;
+      background: #5469d4;
+      border-radius: 20.4px 0 0 20.4px;
+      top: -0.2px;
+      left: -0.2px;
+      -webkit-transform-origin: 10.4px 10.2px;
+      transform-origin: 10.4px 10.2px;
+      -webkit-animation: loading 2s infinite ease 1.5s;
+      animation: loading 2s infinite ease 1.5s;
+    }
+    .spinner:after {
+      width: 10.4px;
+      height: 10.2px;
+      background: #5469d4;
+      border-radius: 0 10.2px 10.2px 0;
+      top: -0.1px;
+      left: 10.2px;
+      -webkit-transform-origin: 0px 10.2px;
+      transform-origin: 0px 10.2px;
+      -webkit-animation: loading 2s infinite ease;
+      animation: loading 2s infinite ease;
+    }
+    @-webkit-keyframes loading {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes loading {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @media only screen and (max-width: 600px) {
+      form {
+        width: 80vw;
+      }
+    }
+    #purchase-cart-box{
+      width: 500px;
+      height: 600px;
+      border-style: solid;
+      border-color: #000000;
+      border-width: 1px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      margin-top: 50px;
+    }
+    #item-container {
     width: 90%;
     height: 40px;
     display: flex;
-    padding: 20px;
-    gap: 100px;
+    padding: 10px;
+    gap: 70px;
     font-size: 24px;
-    align-items: center; 
-    margin: 20px;
-    
+    align-items: center;
+    margin: 5px;
 }
-#cart-item-remove{
-    margin-left: auto;
-    text-decoration: underline;
-    font-size: 20px;
-    cursor: pointer;
-}
+    #cart-item-remove{
+        margin-left: auto;
+        text-decoration: underline;
+        font-size: 20px;
+        cursor: pointer;
+    }
 
-    </style>
-  </head>
-  <body>
-    <section>
+  </style>
+    <div style="display: flex; justify-content: space-around; width: 80%; margin-right: auto; margin-left: auto;">
       
-      <div style="height: 50px;"></div>
-      <button type="button" id="checkout-button" style="display: none;"></button>
-      <form id="payment-form">
-        <input type="text" id="email" placeholder="Email address" />
-        <div id="card-element"><!--Stripe.js injects the Card Element--></div>
-        <button id="submit">
-          <div class="spinner hidden" id="spinner"></div>
-          <span id="button-text">Confirm</span>
-        </button>
-        <p id="card-error" role="alert"></p>
-        <p class="result-message hidden">
-          Payment succeeded, see the result in your
-          <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
-        </p>
-      </form>
-    </section>
-    <div id="purchase-cart-box">
+      <section>
+        <button type="button" id="checkout-button" style="display: none;"></button>
+        <div style="display: flex; margin-left: auto; margin-right: auto; font-size: 38px; justify-content: center; font-weight: bold; padding-right: 100px; margin-top: 50px;">Purchase Cart</div>
+        <form id="payment-form">
+          <input style="margin-top: 40px;" id="payment-input" type="text" id="email" placeholder="Email address" />
+          <div id="card-element"><!--Stripe.js injects the Card Element--></div>
+          <button id="submit">
+            <div class="spinner hidden" id="spinner"></div>
+            <span id="button-text">Confirm</span>
+          </button>
+          <p id="card-error" role="alert"></p>
+          <p class="result-message hidden">
+            Payment succeeded, see the result in your
+            <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
+          </p>
+        </form>
+      </section>
+      <div id="purchase-cart-box">
 
-      {% if cart %}
-        {% for i in cart %}
-            <div id="item-container">
-                <div style="display: flex;">
-                    <div style="margin-right: 25px; font-size: 18px;" id="cart-item-name">{{i.itemName}}</div>
-                    <div style="font-size: 18px;" id="cart-item-size">{{i.itemSize}}</div>
-                </div>
-                <div>
-                    <div style="font-size: 18px;" id="cart-item-price">${{i.getDisplayPrice}}</div>
+        {% if cart %}
+          {% for i in cart %}
+              <div id="item-container">
+                  <div style="display: flex;">
+                      <div style="margin-right: 35px; font-size: 22px;" id="cart-item-name">{{i.itemName}}</div>
+                      <div style="font-size: 22px;" id="cart-item-size">{{i.itemSize}}</div>
+                  </div>
+                  <div>
+                      <div style="font-size: 22px;" id="cart-item-price">${{i.getDisplayPrice}}</div>
 
-                </div>
-                <div id="cart-item-remove">remove</div>
-            </div>
+                  </div>
+              </div>
 
-        {% endfor %}
-        <div style ="margin-top: auto; display: flex;">
-          <div style="margin: 30px; font-size: 28px;">Total</div>
-          <div style="margin: 30px; font-size: 28px;">${{ total }}</div>
-        </div>      
-      {%endif%}
+          {% endfor %}
+          <div style ="margin-top: auto; display: flex;">
+            <div style="margin: 30px; font-size: 32px;">Total</div>
+            <div style="margin: 30px; font-size: 32px;">${{ total }}</div>
+          </div>      
+        {%endif%}
 
-
+      </div>
     </div>
+      
 
 
     {% csrf_token %}
-  </body>
   <script type="text/javascript">
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     // Create an instance of the Stripe object with your publishable API key
@@ -382,4 +371,8 @@ button:disabled {
     };
 
   </script>
+</body>
+<footer></footer>
 </html>
+
+{% endblock %}

@@ -135,7 +135,7 @@ def accountPage(request):
             total = sum(cart.values_list('price', flat=True))
             context=dict()
             context['cart']=cart
-            context['total'] = total/100
+            context['total'] = "{0:.2f}".format(total/100)
         ##cart##
         context['user'] = user
         return render(request, 'kiwinco/account.html', context)
@@ -222,7 +222,7 @@ def editAccount(request):
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total/100
+        context['total'] = "{0:.2f}".format(total/100)
     ##cart##
     context['user'] = user
 
@@ -305,7 +305,7 @@ def home(request):
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total/100
+        context['total'] = "{0:.2f}".format(total/100)
     ##cart##
     context['user'] = user
     
@@ -346,7 +346,7 @@ def item(request, item_id):
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total/100
+        context['total'] = "{0:.2f}".format(total/100)
     ##cart##
     context['user'] = user
 
@@ -415,7 +415,7 @@ def catagory(request,catagory):
         total = sum(cart.values_list('price', flat=True))
 
         context['cart']=cart
-        context['total'] = total/100
+        context['total'] = "{0:.2f}".format(total/100)
     ##cart##
     context['user'] = user
 
@@ -800,6 +800,22 @@ class ProductPurchase(TemplateView):
 
     def get_context_data(self, **kwargs):
 
+        token = self.request.session.get('jwt')
+        url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
+        headers = {
+            'Authorization': token
+        }
+        
+        userdata=requests.get(url, headers=headers)
+        print(userdata)
+        user = userdata.json()
+        user['logged_in'] = False
+
+        if userdata.status_code == 200:
+            user['logged_in'] = True
+
+        print(userdata)
+        print (user)
 
         item = Item.objects.get(id=self.kwargs["pk"])
         context = super(ProductPurchase, self).get_context_data(**kwargs)
@@ -807,6 +823,17 @@ class ProductPurchase(TemplateView):
             "item": item,
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
         })
+
+        ##cart##
+        if user['logged_in']==True:
+            cart = CartedItem.objects.filter(buyerId = user['id'])
+            total = sum(cart.values_list('price', flat=True))
+
+            context['cart']=cart
+            context['total'] = "{0:.2f}".format(total/100)
+        ##cart##
+
+        context['user'] = user
         return context
     
 
@@ -849,6 +876,15 @@ class CartPurchase(TemplateView):
         context.update({
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
         })
+        context['user'] = user
+        ##cart##
+        if user['logged_in']==True:
+            cart = CartedItem.objects.filter(buyerId = user['id'])
+            total = sum(cart.values_list('price', flat=True))
+
+            context['cart']=cart
+            context['total'] = "{0:.2f}".format(total/100)
+        ##cart##        
 
         return context
 
@@ -856,33 +892,44 @@ class CartPurchase(TemplateView):
 class CreateCheckoutSessionView(View):
     def post(self, request, *args, **kwargs):
 
-            product_id = self.kwargs["pk"]
-            item = Item.objects.get(id=product_id)
-            YOUR_DOMAIN = "http://127.0.0.1:8001"
-            checkout_session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[
-                    {
-                        'price_data': {
-                            'currency': 'nzd',
-                            'unit_amount': item.pr,
-                            'product_data': {
-                                'name': item.ItemName,
-                            },
+        token = self.request.session.get('jwt')
+        url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
+        headers = {
+            'Authorization': token
+        }
+
+        userdata=requests.get(url, headers=headers)
+        print(userdata)
+        user = userdata.json()
+        
+
+        product_id = self.kwargs["pk"]
+        item = Item.objects.get(id=product_id)
+        YOUR_DOMAIN = "http://127.0.0.1:8001"
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'nzd',
+                        'unit_amount': item.pr,
+                        'product_data': {
+                            'name': item.ItemName,
                         },
-                        'quantity': 1,
                     },
-                ],
-                metadata={
-                    "product_id": item.id
+                    'quantity': 1,
                 },
-                mode='payment',
-                success_url=YOUR_DOMAIN + '/success/',
-                cancel_url=YOUR_DOMAIN + '/cancel/',
-            )
-            return JsonResponse({
-                'id': checkout_session.id
-            })
+            ],
+            metadata={
+                "product_id": item.id
+            },
+            mode='payment',
+            success_url=YOUR_DOMAIN + '/success/',
+            cancel_url=YOUR_DOMAIN + '/cancel/',
+        )
+        return JsonResponse({
+            'id': checkout_session.id
+        })
     
 
 class CreateCheckoutSessionViewCart(View):
