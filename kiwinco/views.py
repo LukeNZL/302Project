@@ -863,16 +863,6 @@ class CartPurchase(TemplateView):
         context = super(CartPurchase, self).get_context_data(**kwargs)
 
 
-
-        # ##cart##
-        if user['logged_in']==True:
-            cart = CartedItem.objects.filter(buyerId = user['id'])
-            total = sum(cart.values_list('price', flat=True))
-
-            context['cart']=cart
-            context['total'] = "{0:.2f}".format(total/100)
-        # ##cart##
-
         context.update({
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
         })
