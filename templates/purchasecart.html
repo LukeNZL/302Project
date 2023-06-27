@@ -162,18 +162,41 @@ button:disabled {
     width: 80vw;
   }
 }
+#purchase-cart-box{
+  width: 500px;
+  height: 600px;
+  border-style: solid;
+  border-color: #000000;
+  border-width: 1px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 50px;
+}
+#item-container{
+    width: 90%;
+    height: 40px;
+    display: flex;
+    padding: 20px;
+    gap: 100px;
+    font-size: 24px;
+    align-items: center; 
+    margin: 20px;
+    
+}
+#cart-item-remove{
+    margin-left: auto;
+    text-decoration: underline;
+    font-size: 20px;
+    cursor: pointer;
+}
 
     </style>
   </head>
   <body>
-    
     <section>
-      <div class="Item">
-        <div class="description">
-          <h3>{{ item.ItemName }}</h3>
-          <h5>${{ item.getDisplayPrice }}</h5>
-        </div>
-      </div>
+      
+      <div style="height: 50px;"></div>
       <button type="button" id="checkout-button" style="display: none;"></button>
       <form id="payment-form">
         <input type="text" id="email" placeholder="Email address" />
@@ -189,6 +212,32 @@ button:disabled {
         </p>
       </form>
     </section>
+    <div id="purchase-cart-box">
+
+      {% if cart %}
+        {% for i in cart %}
+            <div id="item-container">
+                <div style="display: flex;">
+                    <div style="margin-right: 25px; font-size: 18px;" id="cart-item-name">{{i.itemName}}</div>
+                    <div style="font-size: 18px;" id="cart-item-size">{{i.itemSize}}</div>
+                </div>
+                <div>
+                    <div style="font-size: 18px;" id="cart-item-price">${{i.getDisplayPrice}}</div>
+
+                </div>
+                <div id="cart-item-remove">remove</div>
+            </div>
+
+        {% endfor %}
+        <div style ="margin-top: auto; display: flex;">
+          <div style="margin: 30px; font-size: 28px;">Total</div>
+          <div style="margin: 30px; font-size: 28px;">${{ total }}</div>
+        </div>      
+      {%endif%}
+
+
+    </div>
+
 
     {% csrf_token %}
   </body>
@@ -198,7 +247,7 @@ button:disabled {
     var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
     var checkoutButton = document.getElementById("checkout-button");
     checkoutButton.addEventListener("click", function () {
-      fetch("{% url 'create-checkout-session' item.id %}", {
+      fetch("{% url 'create-checkout-session-cart' %}", {
         method: "POST",
         headers: {
             'X-CSRFToken': csrftoken
@@ -223,6 +272,7 @@ button:disabled {
         });
     });
 
+
     // Disable the button until we have Stripe set up on the page
     document.querySelector("button").disabled = true;
 
@@ -243,6 +293,7 @@ button:disabled {
         iconColor: "#fa755a"
       }
     };
+
     var card = elements.create("card", { style: style });
     // Stripe injects an iframe into the DOM
     card.mount("#card-element");
@@ -255,7 +306,7 @@ button:disabled {
     form.addEventListener("submit", function(event) {
       event.preventDefault();
       // Complete payment when the submit button is clicked
-      fetch("{% url 'create-payment-intent' item.id %}", {
+      fetch("{% url 'create-payment-intent-cart' %}", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

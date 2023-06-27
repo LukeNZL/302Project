@@ -578,42 +578,45 @@ def buyCart(request):
 #@csrf_exempt
 def buyItem(request, item_id):
 
-    item = get_object_or_404(Item, pk=item_id)
-    #context = {'item': item}
 
-    YOUR_DOMAIN = "http://127.0.0.1:8001/kiwinco/"
-    stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            billing_address_collection='auto',
-            shipping_address_collection={
-              'allowed_countries': ['NZ'],
-            },
-            line_items=[
-                {
-                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    #'price': 'price_1N6eFXJDzpA491w3wbEEK3GH',
-                    'price_data': {
-                        'currency': 'nzd',
-                        'product_data' : {
-                            'name' : item.ItemName,
-                        },
-                        'unit_amount' : item.Price,
 
-                    },
-                    'quantity': 1,
-                },
-            ],
-            mode='payment',
-            success_url=YOUR_DOMAIN + 'success',
-            cancel_url=YOUR_DOMAIN + 'cancel',
-            automatic_tax={'enabled': True},
-    )
-    except Exception as e:
-        return HttpResponse(e)
+    # item = get_object_or_404(Item, pk=item_id)
+    # #context = {'item': item}
 
-    return redirect(checkout_session.url, code=303) 
+    # YOUR_DOMAIN = "http://127.0.0.1:8001/kiwinco/"
+    # stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
+
+    # try:
+    #     checkout_session = stripe.checkout.Session.create(
+    #         billing_address_collection='auto',
+    #         shipping_address_collection={
+    #           'allowed_countries': ['NZ'],
+    #         },
+    #         line_items=[
+    #             {
+    #                 # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+    #                 #'price': 'price_1N6eFXJDzpA491w3wbEEK3GH',
+    #                 'price_data': {
+    #                     'currency': 'nzd',
+    #                     'product_data' : {
+    #                         'name' : item.ItemName,
+    #                     },
+    #                     'unit_amount' : item.Price,
+
+    #                 },
+    #                 'quantity': 1,
+    #             },
+    #         ],
+    #         mode='payment',
+    #         success_url=YOUR_DOMAIN + 'success',
+    #         cancel_url=YOUR_DOMAIN + 'cancel',
+    #         automatic_tax={'enabled': True},
+    # )
+    # except Exception as e:
+    #     return HttpResponse(e)
+
+    # return redirect(checkout_session.url, code=303) 
     
     #return render(request, 'kiwinco/purchase.html', context)
 
@@ -637,7 +640,7 @@ def buyItem(request, item_id):
     #     x.save()
     #     u.save()
 
-    # return redirect('home')
+    return redirect('home')
 
 
 def create_checkout_session(request):
@@ -766,3 +769,298 @@ def webhook(request):
 
   # Passed signature verification
   return HttpResponse(status=200)
+
+
+
+###WIP###
+
+import json
+import stripe
+from django.core.mail import send_mail
+from django.conf import settings
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponse
+from django.views import View
+
+
+#stripe.api_key = settings.STRIPE_SECRET_KEY
+stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
+
+class SuccessView(TemplateView):
+    template_name = "success.html"
+
+
+class CancelView(TemplateView):
+    template_name = "cancel.html"
+
+
+class ProductPurchase(TemplateView):
+    template_name = "purchase.html"
+
+    def get_context_data(self, **kwargs):
+
+
+        item = Item.objects.get(id=self.kwargs["pk"])
+        context = super(ProductPurchase, self).get_context_data(**kwargs)
+        context.update({
+            "item": item,
+            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
+        })
+        return context
+    
+
+class CartPurchase(TemplateView):
+    template_name = "purchasecart.html"
+
+    def get_context_data(self, **kwargs):
+
+        token = self.request.session.get('jwt')
+        url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
+        headers = {
+            'Authorization': token
+        }
+        
+        userdata=requests.get(url, headers=headers)
+        print(userdata)
+        user = userdata.json()
+        user['logged_in'] = False
+
+        if userdata.status_code == 200:
+            user['logged_in'] = True
+
+        print(userdata)
+        print (user)
+
+
+        context = super(CartPurchase, self).get_context_data(**kwargs)
+
+
+
+        # ##cart##
+        if user['logged_in']==True:
+            cart = CartedItem.objects.filter(buyerId = user['id'])
+            total = sum(cart.values_list('price', flat=True))
+
+            context['cart']=cart
+            context['total'] = "{0:.2f}".format(total/100)
+        # ##cart##
+
+        context.update({
+            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
+        })
+
+        return context
+
+
+class CreateCheckoutSessionView(View):
+    def post(self, request, *args, **kwargs):
+
+            product_id = self.kwargs["pk"]
+            item = Item.objects.get(id=product_id)
+            YOUR_DOMAIN = "http://127.0.0.1:8001"
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'nzd',
+                            'unit_amount': item.pr,
+                            'product_data': {
+                                'name': item.ItemName,
+                            },
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                metadata={
+                    "product_id": item.id
+                },
+                mode='payment',
+                success_url=YOUR_DOMAIN + '/success/',
+                cancel_url=YOUR_DOMAIN + '/cancel/',
+            )
+            return JsonResponse({
+                'id': checkout_session.id
+            })
+    
+
+class CreateCheckoutSessionViewCart(View):
+    def post(self, request, *args, **kwargs):
+
+        token = self.request.session.get('jwt')
+        url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
+        headers = {
+            'Authorization': token
+        }
+
+        userdata=requests.get(url, headers=headers)
+        print(userdata)
+        user = userdata.json()
+
+
+        cart = CartedItem.objects.filter(buyerId = user['id'])
+        total = sum(cart.values_list('price'))
+
+        total = "{0:.2f}".format(total)
+
+        YOUR_DOMAIN = "http://127.0.0.1:8001"
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'nzd',
+                        'unit_amount': total,
+                        'product_data': {
+                            'name': 'cart',
+                        },
+                    },
+                    'quantity': 1,
+                },
+            ],
+            metadata={
+                "product_id": item.id
+            },
+            mode='payment',
+            success_url=YOUR_DOMAIN + '/success/',
+            cancel_url=YOUR_DOMAIN + '/cancel/',
+        )
+        return JsonResponse({
+            'id': checkout_session.id
+        })
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        customer_email = session["customer_details"]["email"]
+        product_id = session["metadata"]["product_id"]
+
+        item = Item.objects.get(id=product_id)
+
+        send_mail(
+            subject="Here is your product",
+            message=f"Thanks for your purchase. Here is the product you ordered. The URL is",
+            recipient_list=[customer_email],
+            from_email="matt@test.com"
+        )
+
+        # TODO - decide whether you want to send the file or the URL
+    
+    elif event["type"] == "payment_intent.succeeded":
+        intent = event['data']['object']
+
+        stripe_customer_id = intent["customer"]
+        stripe_customer = stripe.Customer.retrieve(stripe_customer_id)
+
+        customer_email = stripe_customer['email']
+        product_id = intent["metadata"]["product_id"]
+
+        item = Item.objects.get(id=product_id)
+
+        send_mail(
+            subject="Here is your product",
+            message=f"Thanks for your purchase. Here is the product you ordered. The URL is",
+            recipient_list=[customer_email],
+            from_email="matt@test.com"
+        )
+
+    return HttpResponse(status=200)
+
+
+class StripeIntentView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            req_json = json.loads(request.body)
+            customer = stripe.Customer.create(email=req_json['email'])
+            product_id = self.kwargs["pk"]
+            item = Item.objects.get(id=product_id)
+            intent = stripe.PaymentIntent.create(
+                amount=item.Price,
+                currency='nzd',
+                automatic_payment_methods={
+                'enabled': True,
+                },
+                customer=customer['id'],
+                metadata={
+                    "product_id": item.id
+                }
+            )
+            return JsonResponse({
+                'clientSecret': intent['client_secret']
+            })
+        except Exception as e:
+            return JsonResponse({ 'error': str(e) })
+        
+
+
+class StripeIntentViewCart(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            token = self.request.session.get('jwt')
+            url = 'http://kiwinco-userapi-dev.ap-southeast-2.elasticbeanstalk.com/api/user/'
+            headers = {
+                'Authorization': token
+            }
+
+            userdata=requests.get(url, headers=headers)
+            print(userdata)
+            user = userdata.json()
+
+
+            cart = CartedItem.objects.filter(buyerId = user['id'])
+            total = sum(cart.values_list('price', flat=True))
+            carted_items = cart.values_list('itemName', flat = True)
+            carted_size = cart.values_list('itemSize', flat = True)
+                
+            
+            cart_names = {}
+
+            for i in range (len(cart)):    
+                
+                cart_names[str(carted_items[i])] = [carted_size[i]]
+            
+            cart_names[str(carted_items[0])] = [carted_size[0]]
+            print(cart_names)
+
+            req_json = json.loads(request.body)
+            customer = stripe.Customer.create(email=req_json['email'])
+            intent = stripe.PaymentIntent.create(
+                amount=total,
+                currency='nzd',
+                automatic_payment_methods={
+                'enabled': True,
+                },
+                customer=customer['id'],
+                metadata={
+                    "product_id": str(cart_names), 
+                }
+            )
+            return JsonResponse({
+                'clientSecret': intent['client_secret']
+            })
+        except Exception as e:
+            return JsonResponse({ 'error': str(e) })
+        
+
+
+###WIP###

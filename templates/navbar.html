@@ -78,7 +78,7 @@
             {% endfor %}
             <div style="width: 100%; height: 30px; position: absolute; bottom: 0; margin-bottom: 20px; display: flex; justify-content: space-around;">
                 <div style="font-size: 22px">Total: ${{total}}</div>
-                <a style="font-size: 22px;" id="buy-button" href="{% url 'buyCart' %}">BUY CART</a>
+                <a style="font-size: 22px;" id="buy-button" href="{% url 'CartPurchase' %}">BUY CART</a>
             </div>
         {% else %}
             {% if user.logged_in %}

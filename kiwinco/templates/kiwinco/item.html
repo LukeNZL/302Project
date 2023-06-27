@@ -53,7 +53,7 @@
                 {% csrf_token %}
                 <button type="submit" id="buy-button" class="buy-item-button">Checkout</button>
             </form> -->
-            <a id="buy-button" class="buy-item-button" href="{% url 'buyItem' item.id %}">Buy Now</a>
+            <a id="buy-button" class="buy-item-button" href="{% url 'payment' item.id %}">Buy Now</a>
         </div>
     </div>
 

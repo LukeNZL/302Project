@@ -4,27 +4,41 @@
 {% block content %}
 <body>
     
-    <div>
+    <h1 style="padding-left: 15px ;">Account Page</h1>
+    <div style="display: flex; flex-direction: column; align-items: center;">
 
-        <h3>Edit Your Account Details</h3>
+        <h3 style="font-size: 28px;">Edit Your Account Details</h3>
+        <style>
+            #input-box{
+                border-radius: 10px;
+                padding: 12px;
+                border-width: 1px;
+                border-style: solid;
+                height: 30px;
+                font-size: 16px;
+                width: 100%;
+                background: white;
+            }
 
-        <div>
-            <form method="POST" action="">
+        </style>
+        
+        <form method="POST" action="">
+
+            <div style="display: flex; flex-direction: column; align-items: center;">
                 {% csrf_token %}
-                <input type="text" placeholder="Username" name="username" required>
+                <input id="input-box" type="text" placeholder="Username" name="username" required>
                 <br><br>
-                <input type="email" placeholder="Email" name="email" required>
+                <input id="input-box" type="email" placeholder="Email" name="email" required>
                 <br><br>
-                <input type="password" placeholder="Password" name="password1" required>
+                <input id="input-box" type="password" placeholder="Password" name="password1" required>
                 <br><br>
-                <input type="password" placeholder="Confirm Password" name="password2" required>
+                <input id="input-box" type="password" placeholder="Confirm Password" name="password2" required>
                 <br><br> 
-                <button type="submit" name="edit">Confirm Edit</button>
-            </form>
+                <button type="submit" name="edit" style="font-size: 22px; width: 220px; height: 50px; border-style: solid; border-radius: 10px; background-color: #D9D9D9; display: flex; justify-content: center; align-items: center; border-width: 1px;">Confirm Edit</button>
+            </div>
+
+        </form>
         
-        
-        </div>
-       
 
 
     </div>
