@@ -37,7 +37,6 @@ urlpatterns = [
 #    path('success/', views.success, name='success'),
 #    path('successC/', views.successC, name='successC'),
 #    path('cancel/', views.cancel, name='cancel'),
-#    path('webhook/', views.webhook, name='webhook'),
     
     #path('login/', UserLogin.as_view(), name='login'),
 

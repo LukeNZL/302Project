@@ -680,7 +680,8 @@ def create_checkout_session(request):
     return redirect(checkout_session.url, code=303)
 
 def success(request):
-    return render(request, 'kiwinco/success.html')
+
+    return render(request, 'success.html')
 
 def successC(request):
     token = request.session.get('jwt')
@@ -721,55 +722,6 @@ def cancel(request):
 
 
 stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
-
-@csrf_exempt
-def webhook(request):
-  payload = request.body
-  sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-  event = None
-
-  try:
-    event = stripe.Webhook.construct_event(
-      payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-    )
-  except ValueError as e:
-    # Invalid payload
-    return HttpResponse(status=400)
-  except stripe.error.SignatureVerificationError as e:
-    # Invalid signature
-    return HttpResponse(status=400)
-  
-  if event['type'] == 'checkout.session.completed':
-    # Retrieve the session. If you require line items in the response, you may include them by expanding line_items.
-    session = stripe.checkout.Session.retrieve(
-    event['data']['object']['id'],
-    expand=['line_items'],
-    )
-
-    customer_email = session["customer_details"]["email"]
-
-    send_mail(
-        subject = "KiwiNCo Purchace Completed",
-        message = "Thank you for your purchace",
-        recipient_list=[customer_email],
-        from_email="adamts028@gmail.com"
-    )
-
-    send_mail(
-        subject = "KiwiNCo Incoming Order",
-        message = "Order",
-        recipient_list=["adamts028@gmail.com"],
-        from_email="adamts028@gmail.com"
-    )
-
-    line_items = session.line_items
-    # Fulfill the purchase...
-    #print(session)
-    # fulfill_order(line_items)
-
-  # Passed signature verification
-  return HttpResponse(status=200)
-
 
 
 ###WIP###
@@ -896,10 +848,10 @@ class CreateCheckoutSessionView(View):
         product_id = self.kwargs["pk"]
         item = Item.objects.get(id=product_id)
         YOUR_DOMAIN = "http://127.0.0.1:8001"
-        checkout_session = stripe.checkout.Session.create(
+        checkout_session = stripe.checkout.Session.create( 
             payment_method_types=['card'],
             line_items=[
-                {
+                {                     
                     'price_data': {
                         'currency': 'nzd',
                         'unit_amount': item.pr,
@@ -911,8 +863,9 @@ class CreateCheckoutSessionView(View):
                 },
             ],
             metadata={
-                "product_id": item.id
-            },
+                    "product_id": item.ItemName,
+                    "Address" : "WIP",
+                },
             mode='payment',
             success_url=YOUR_DOMAIN + '/success/',
             cancel_url=YOUR_DOMAIN + '/cancel/',
@@ -957,8 +910,8 @@ class CreateCheckoutSessionViewCart(View):
                 },
             ],
             metadata={
-                "product_id": item.id
-            },
+                    "product_id": 'str(cart_names)', 
+                },
             mode='payment',
             success_url=YOUR_DOMAIN + '/success/',
             cancel_url=YOUR_DOMAIN + '/cancel/',
@@ -991,17 +944,21 @@ def stripe_webhook(request):
 
         customer_email = session["customer_details"]["email"]
         product_id = session["metadata"]["product_id"]
-
-        item = Item.objects.get(id=product_id)
+        Address = session["metadata"]["Address"]
 
         send_mail(
             subject="Here is your product",
-            message=f"Thanks for your purchase. Here is the product you ordered. The URL is",
+            message=f"Thanks for your purchase. Here is the product you ordered. " + str(product_id),
             recipient_list=[customer_email],
-            from_email="matt@test.com"
+            from_email="test@test.com"
         )
 
-        # TODO - decide whether you want to send the file or the URL
+        send_mail(
+            subject="Purchase Made",
+            message=f"Purchase from " + customer_email + " of " + str(product_id) + " to " + str(Address),
+            recipient_list=["test@test.com"],
+            from_email="test@test.com"
+        )
     
     elif event["type"] == "payment_intent.succeeded":
         intent = event['data']['object']
@@ -1009,16 +966,22 @@ def stripe_webhook(request):
         stripe_customer_id = intent["customer"]
         stripe_customer = stripe.Customer.retrieve(stripe_customer_id)
 
+
         customer_email = stripe_customer['email']
         product_id = intent["metadata"]["product_id"]
-
-        item = Item.objects.get(id=product_id)
-
+        Address = intent["metadata"]["Address"]
         send_mail(
             subject="Here is your product",
-            message=f"Thanks for your purchase. Here is the product you ordered. The URL is",
+            message=f"Thanks for your purchase. Here is the product you ordered." + str(product_id),
             recipient_list=[customer_email],
-            from_email="matt@test.com"
+            from_email="test@test.com"
+        )
+
+        send_mail(
+            subject="Purchase Made",
+            message=f"Purchase from " + customer_email + " of " + str(product_id) + " to " + str(Address),
+            recipient_list=["test@test.com"],
+            from_email="test@test.com"
         )
 
     return HttpResponse(status=200)
@@ -1039,8 +1002,9 @@ class StripeIntentView(View):
                 },
                 customer=customer['id'],
                 metadata={
-                    "product_id": item.id
-                }
+                    "product_id": item.ItemName,
+                    "Address" : "WIP",
+                },    
             )
             return JsonResponse({
                 'clientSecret': intent['client_secret']
@@ -1072,12 +1036,11 @@ class StripeIntentViewCart(View):
             
             cart_names = {}
 
-            for i in range (len(cart)):    
-                
-                cart_names[str(carted_items[i])] = [carted_size[i]]
+            for i in range (len(cart)):
+                temp = ""    
+                temp = str(carted_items[i]) + str(carted_size[i])
+                cart_names[str(i)] = temp
             
-            cart_names[str(carted_items[0])] = [carted_size[0]]
-            print(cart_names)
 
             req_json = json.loads(request.body)
             customer = stripe.Customer.create(email=req_json['email'])
@@ -1090,6 +1053,7 @@ class StripeIntentViewCart(View):
                 customer=customer['id'],
                 metadata={
                     "product_id": str(cart_names), 
+                    "Address" : "WIP",
                 }
             )
             return JsonResponse({
@@ -1098,6 +1062,5 @@ class StripeIntentViewCart(View):
         except Exception as e:
             return JsonResponse({ 'error': str(e) })
         
-
 
 ###WIP###
