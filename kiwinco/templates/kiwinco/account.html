@@ -1,0 +1,33 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<body>
+    <h1 style="padding-left: 15px ; font-size: 38px;">Account Page</h1>
+    <div style="display: flex; height: 400px; width: 100%; justify-content: center; align-items: center; flex-direction: column;">
+        
+
+        <p style="margin-bottom: auto; font-size: 32px; font-weight: bold;">Welcome, {{ user.username }}</p>
+
+        <div style="display: flex; width: 60%; height: 100%; align-items: center; justify-content: space-around;">
+            <div style="display: flex; flex-direction: column; width: 50%; justify-content: center; align-items: center;">
+                <p style="font-size: 28px;">Your account details:</p>
+                <p style="font-size: 22px;">Email: {{user.email}}</p>            
+            </div>
+
+            <div style="display: flex; flex-direction: column; justify-content: space-around; width: 50%; align-items: center;">
+                <p><a style="width: 160px; height: 40px; border-style: solid; border-radius: 10px; background-color: #D9D9D9; display: flex; justify-content: center; align-items: center; border-width: 1px;" href="{% url 'logout' %}">Logout</a></p>                
+                <p><a style="width: 160px; height: 40px; border-style: solid; border-radius: 10px; background-color: #D9D9D9; display: flex; justify-content: center; align-items: center; border-width: 1px;" href="{% url 'edituser' %}">Edit User</a></p>
+                <p><a style="width: 160px; height: 40px; border-style: solid; border-radius: 10px; background-color: #D9D9D9; display: flex; justify-content: center; align-items: center; border-width: 1px;" href="{% url 'deleteuser' %}">Delete User</a></p>     
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <footer>
+    </footer>
+</body>
+</html>
+{% endblock %}

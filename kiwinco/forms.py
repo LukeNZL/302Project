@@ -6,18 +6,19 @@ from django.forms.forms import Form
 
 # custom form built off of prebuilt django form
 class RegisterForm(UserCreationForm):
-    username = forms.CharField(label='username', min_length=4, max_length=150)
+    username = forms.CharField(label='username', min_length=1, max_length=150)
     password1 = forms.CharField(label='password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
-
+    email= forms.EmailField(label='email', max_length=150)
     # makes all characters lowercase so users can't make duplicate accounts with different capitalisations.
     # also, then checks username with names already in the database
     # these functions validate the form when the corresponding function is called in the views file
     def username_clean(self):
         username = self.cleaned_data['username'].lower()
-        new = User.objects.filter(username=username)
-        if new.count():
-            raise ValidationError("User Already Exist")
+        #new = User.objects.filter(username=username)
+        
+        #if new.count():
+        #    raise ValidationError("User Already Exist")
         return username
 
     def clean_password2(self):
@@ -29,9 +30,11 @@ class RegisterForm(UserCreationForm):
         return password2
 
     def save(self, commit=True):
-        user = User.objects.create_user(
+        pass
+        user = User.objects(
             self.cleaned_data['username'],
-            None,
+            self.email,
             self.cleaned_data['password1']
+    
         )
         return user

@@ -53,7 +53,7 @@
                 {% csrf_token %}
                 <button type="submit" id="buy-button" class="buy-item-button">Checkout</button>
             </form> -->
-            <a id="buy-button" class="buy-item-button" href="{% url 'buyItem' item.id %}">Buy Now</a>
+            <a id="buy-button" class="buy-item-button" href="{% url 'payment' item.id %}">Buy Now</a>
         </div>
     </div>
 
@@ -159,7 +159,7 @@
             price = {{item.Price}}
             item_id = {{item.id}}
             name = '{{item.ItemName}}'
-            if (selected_size != '' && in_stock && 'True'== '{{request.user.is_authenticated}}'){
+            if (selected_size != '' && in_stock ){
                 document.getElementById('cart-add-notif').style.display = "flex";
                 setTimeout(() => {  document.getElementById('cart-add-notif').style.display = "none"; }, 3000);
 

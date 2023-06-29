@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-
+from datetime import timedelta
+from django.conf import settings
+#text
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,15 +40,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'project302',
+    'rest_framework',
+    'rest_framework_simplejwt',
     
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -140,31 +146,39 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-AWS_STORAGE_BUCKET_NAME = 'kiwinco-app-bucket'
-AWS_S3_REGION_NAME = 'ap-southeast-2'
+#AWS_STORAGE_BUCKET_NAME = 'kiwinco-app-bucket'
+#AWS_S3_REGION_NAME = 'ap-southeast-2'
 
 
 
-AWS_S3_ACCESS_KEY_ID = 'AKIAVMXNK6O7YQCXGRGT'
-AWS_S3_SECRET_ACCESS_KEY = '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'
+#AWS_S3_ACCESS_KEY_ID = 'AKIAVMXNK6O7YQCXGRGT'
+#AWS_S3_SECRET_ACCESS_KEY = '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'
 
 
 
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_OBJECT_PARAMETERS = {
-   'CacheControl': 'max-age=86400',
-}
-AWS_S3_FILE_OVERWRITE = False
+#AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+#AWS_S3_OBJECT_PARAMETERS = {
+#   'CacheControl': 'max-age=86400',
+#}
+#AWS_S3_FILE_OVERWRITE = False
 #AWS_DEFAULT_ACL = 'public-read'
-AWS_DEFAULT_ACL = None
-AWS_LOCATION = 'static'
+#AWS_DEFAULT_ACL = None
+#AWS_LOCATION = 'static'
+
+
+
 STATICFILES_DIRS = [
-   'static',
+    BASE_DIR / "static",
+    "static/",
 ]
-STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATIC_URL = '/static/'
+#STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 #STATIC_ROOT = 'static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -176,8 +190,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-STRIPE_PUBLIC_KEY = "pk_live_51N60CYJDzpA491w3K0OtJz8a6VZUkc5ZiRMXoQyWBhNKVJou1M3JGzeGOqBRnA2ZO5zf6vonSuNUVEkKDfbjdAQv006M615wDv"
-STRIPE_SECRET_KEY = "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"
+STRIPE_PUBLIC_KEY = "pk_test_51N60CYJDzpA491w3dPYtQLP1RFdYhFWPZ3xLm90D9lZCQAHd1uMvyJWWvQGmTvca54fKYoKJIyZTS2ZSCEm8e30700kFtV9oZ9"
+STRIPE_SECRET_KEY = "sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL"
 STRIPE_WEBHOOK_SECRET = "whsec_b01dcfb8b6de8822091be6376def7cc3de3ee6105b176cf2b734ecf7136605d6"
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
