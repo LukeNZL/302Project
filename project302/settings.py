@@ -30,7 +30,6 @@ SECRET_KEY = 'django-insecure-o(d^@)7cn9#fkxo+*axpyc75q7$k0t#v)b%riybp2(=mry-f=%
 # Application definition
 
 INSTALLED_APPS = [
-    'kiwinco.apps.KiwincoConfig',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
+    'project302',
     'kiwinco',
-    '302project',
     'rest_framework',
     'rest_framework_simplejwt',
     
