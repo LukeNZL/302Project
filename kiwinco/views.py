@@ -854,7 +854,7 @@ class CreateCheckoutSessionView(View):
                 {                     
                     'price_data': {
                         'currency': 'nzd',
-                        'unit_amount': item.pr,
+                        'unit_amount': 1,
                         'product_data': {
                             'name': item.ItemName,
                         },
@@ -937,6 +937,7 @@ def stripe_webhook(request):
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
         return HttpResponse(status=400)
+    
 
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
@@ -945,6 +946,7 @@ def stripe_webhook(request):
         customer_email = session["customer_details"]["email"]
         product_id = session["metadata"]["product_id"]
         Address = session["metadata"]["Address"]
+
 
         send_mail(
             subject="Here is your product",
@@ -992,6 +994,10 @@ class StripeIntentView(View):
         try:
             req_json = json.loads(request.body)
             customer = stripe.Customer.create(email=req_json['email'])
+            address_dict = req_json['address']
+
+            address = address_dict['line1'] + ' ' + address_dict['line2'] + ' ' + address_dict['city'] + ' ' + address_dict['country'] + ' ' + address_dict['postal_code'] + ' ' + address_dict['state']
+
             product_id = self.kwargs["pk"]
             item = Item.objects.get(id=product_id)
             intent = stripe.PaymentIntent.create(
@@ -1003,7 +1009,7 @@ class StripeIntentView(View):
                 customer=customer['id'],
                 metadata={
                     "product_id": item.ItemName,
-                    "Address" : "WIP",
+                    "Address" : str(address),
                 },    
             )
             return JsonResponse({
@@ -1026,8 +1032,12 @@ class StripeIntentViewCart(View):
             userdata=requests.get(url, headers=headers)
             print(userdata)
             user = userdata.json()
+            req_json = json.loads(request.body)
+            customer = stripe.Customer.create(email=req_json['email'])
+            address_dict = req_json['address']
 
-
+            address = address_dict['line1'] + ' ' + address_dict['line2'] + ' ' + address_dict['city'] + ' ' + address_dict['country'] + ' ' + address_dict['postal_code'] + ' ' + address_dict['state']
+            print(address)
             cart = CartedItem.objects.filter(buyerId = user['id'])
             total = sum(cart.values_list('price', flat=True))
             carted_items = cart.values_list('itemName', flat = True)
@@ -1041,9 +1051,13 @@ class StripeIntentViewCart(View):
                 temp = str(carted_items[i]) + str(carted_size[i])
                 cart_names[str(i)] = temp
             
+            cart_final = ""
 
-            req_json = json.loads(request.body)
-            customer = stripe.Customer.create(email=req_json['email'])
+            for i in range (len(cart)):
+                cart_final += cart_names[str(i)]  
+                cart_final += ' '
+            
+
             intent = stripe.PaymentIntent.create(
                 amount=total,
                 currency='nzd',
@@ -1052,8 +1066,8 @@ class StripeIntentViewCart(View):
                 },
                 customer=customer['id'],
                 metadata={
-                    "product_id": str(cart_names), 
-                    "Address" : "WIP",
+                    "product_id": str(cart_final), 
+                    "Address" : str(address),
                 }
             )
             return JsonResponse({

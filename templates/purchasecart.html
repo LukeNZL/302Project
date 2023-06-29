@@ -53,6 +53,10 @@
       width: 80%;
       background: white;
     }
+    #address-element {
+      width: 80%;
+      padding: 12px;
+    }
     #payment-request-button {
       margin-bottom: 32px;
     }
@@ -120,6 +124,7 @@
         <form id="payment-form">
           <input style="margin-top: 40px;" type="text" id="email" placeholder="Email address" />
           <div id="card-element"><!--Stripe.js injects the Card Element--></div>
+          <div id="address-element"><!--Stripe.js injects the Address Element--></div>
           <button id="submit">
             <div class="spinner hidden" id="spinner"></div>
             <span id="button-text">Confirm</span>
@@ -212,14 +217,28 @@
       }
     };
 
+    const options = { mode: 'shipping' };
+    const addressElement = elements.create('address', options);
+
     var card = elements.create("card", { style: style });
     // Stripe injects an iframe into the DOM
     card.mount("#card-element");
+    addressElement.mount('#address-element');
+
     card.on("change", function (event) {
       // Disable the Pay button if there are no card details in the Element
       document.querySelector("button").disabled = event.empty;
       document.querySelector("#card-error").textContent = event.error ? event.error.message : "";
     });
+
+    var addressValue
+    addressElement.on('change', (event) => {
+    if (event.complete){
+    // Extract potentially complete address
+      addressValue = event.value.address;
+    }
+    })
+
     var form = document.getElementById("payment-form");
     form.addEventListener("submit", function(event) {
       event.preventDefault();
@@ -231,7 +250,8 @@
           'X-CSRFToken': csrftoken
         },
         body: JSON.stringify({
-          email: document.getElementById('email').value
+          email: document.getElementById('email').value,
+          address: addressValue
         })
       })
         .then(function(result) {
