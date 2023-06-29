@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'kiwinco',
+    '302project',
     'rest_framework',
     'rest_framework_simplejwt',
     
