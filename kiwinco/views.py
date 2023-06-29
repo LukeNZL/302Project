@@ -517,7 +517,7 @@ def buyCart(request):
         cart = CartedItem.objects.filter(buyerId = user['id'])
         total = sum(cart.values_list('price', flat=True))
 
-        YOUR_DOMAIN = "http://127.0.0.1:8001/"
+        YOUR_DOMAIN = "http://302kiwinco-dev.ap-southeast-2.elasticbeanstalk.com/"
         stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
         try:
@@ -584,7 +584,7 @@ def buyItem(request, item_id):
     # item = get_object_or_404(Item, pk=item_id)
     # #context = {'item': item}
 
-    # YOUR_DOMAIN = "http://127.0.0.1:8001/kiwinco/"
+    # YOUR_DOMAIN = "302kiwinco-dev.ap-southeast-2.elasticbeanstalk.com/kiwinco/"
     # stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
     # try:
@@ -645,7 +645,7 @@ def buyItem(request, item_id):
 
 def create_checkout_session(request):
     #TEMP!!!!!!
-    YOUR_DOMAIN = "http://127.0.0.1:8001/"
+    YOUR_DOMAIN = "http://302kiwinco-dev.ap-southeast-2.elasticbeanstalk.com/"
     stripe.api_key = 'sk_test_51N60CYJDzpA491w35DvXhdahCcOasic85U3T2UETDLPRrvtmAWkFhEThfq5HVGLYwUcAZ8LbwVeOgZGFfRFb6rus00GArPVxXL'
 
     try:
@@ -847,7 +847,7 @@ class CreateCheckoutSessionView(View):
 
         product_id = self.kwargs["pk"]
         item = Item.objects.get(id=product_id)
-        YOUR_DOMAIN = "http://127.0.0.1:8001"
+        YOUR_DOMAIN = "http://302kiwinco-dev.ap-southeast-2.elasticbeanstalk.com"
         checkout_session = stripe.checkout.Session.create( 
             payment_method_types=['card'],
             line_items=[
@@ -894,7 +894,7 @@ class CreateCheckoutSessionViewCart(View):
 
         total = "{0:.2f}".format(total)
 
-        YOUR_DOMAIN = "http://127.0.0.1:8001"
+        YOUR_DOMAIN = "http://302kiwinco-dev.ap-southeast-2.elasticbeanstalk.com"
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
