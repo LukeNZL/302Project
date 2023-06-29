@@ -153,43 +153,110 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-AWS_STORAGE_BUCKET_NAME = 'elasticbeanstalk-ap-southeast-2-401913716869'
-AWS_S3_REGION_NAME = 'ap-southeast-2'
+# AWS_STORAGE_BUCKET_NAME = 'elasticbeanstalk-ap-southeast-2-401913716869'
+# AWS_S3_REGION_NAME = 'ap-southeast-2'
 
 
 
-AWS_S3_ACCESS_KEY_ID = 'AKIAV3E7MUCC5VEJFEWX'
-AWS_S3_SECRET_ACCESS_KEY = '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'
+# AWS_S3_ACCESS_KEY_ID = 'AKIAV3E7MUCC5VEJFEWX'
+# AWS_S3_SECRET_ACCESS_KEY = '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'
 
 
 
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_OBJECT_PARAMETERS = {
-  'CacheControl': 'max-age=86400',
-}
-AWS_S3_FILE_OVERWRITE = False
-#AWS_DEFAULT_ACL = 'public-read'
-AWS_DEFAULT_ACL = None
-AWS_LOCATION = 'static'
+# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+# AWS_S3_OBJECT_PARAMETERS = {
+#   'CacheControl': 'max-age=86400',
+# }
+# AWS_S3_FILE_OVERWRITE = False
+# #AWS_DEFAULT_ACL = 'public-read'
+# AWS_DEFAULT_ACL = None
+# AWS_LOCATION = 'static'
 
 
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    "static/",
-]
-STATIC_URL = '/static/'
-STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static",
+#     "static/",
+# ]
+# STATIC_URL = '/static/'
+# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 #STATIC_ROOT = 'static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# MEDIA_URL = '/media/'
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+if 'S3_BUCKET' in os.environ:
+
+    # aws settings
+
+   
+
+    AWS_S3_ACCESS_KEY_ID = 'AKIAV3E7MUCC5VEJFEWX'
+
+    AWS_S3_SECRET_ACCESS_KEY = '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'
+
+    AWS_STORAGE_BUCKET_NAME = 'kiwinco-bucket'
+
+    AWS_S3_REGION_NAME = 'ap-southeast-2'
+
+
+
+    AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+    AWS_S3_OBJECT_PARAMETERS = {
+
+    'CacheControl': 'max-age=86400',
+
+    }
+
+    AWS_S3_FILE_OVERWRITE = False
+
+    #AWS_DEFAULT_ACL = 'public-read'
+
+    AWS_DEFAULT_ACL = None
+
+    AWS_LOCATION = 'static'
+
+    STATICFILES_DIRS = [
+
+    'static',
+
+    ]
+
+    STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+else:  
+
+    STATIC_URL = '/static/'
+
+    # STATIC_ROOT = 'static'
+
+    # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+
+
+#STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+
+
+
+
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+
 
 
 STRIPE_PUBLIC_KEY = "pk_test_51N60CYJDzpA491w3dPYtQLP1RFdYhFWPZ3xLm90D9lZCQAHd1uMvyJWWvQGmTvca54fKYoKJIyZTS2ZSCEm8e30700kFtV9oZ9"
